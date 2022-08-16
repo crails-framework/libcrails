@@ -19,16 +19,16 @@
 // 3.0.0-b.2    0000299999999995020
 // 2.2.0-a.1.z  0000200001999990011
 //
-#define LIBCRAILS_VERSION       $crails.version.project_number$ULL
-#define LIBCRAILS_VERSION_STR   "$crails.version.project$"
-#define LIBCRAILS_VERSION_ID    "$crails.version.project_id$"
-#define LIBCRAILS_VERSION_FULL  "$crails.version$"
+#define LIBCRAILS_VERSION       $libcrails.version.project_number$ULL
+#define LIBCRAILS_VERSION_STR   "$libcrails.version.project$"
+#define LIBCRAILS_VERSION_ID    "$libcrails.version.project_id$"
+#define LIBCRAILS_VERSION_FULL  "$libcrails.version$"
 
-#define LIBCRAILS_VERSION_MAJOR $crails.version.major$
-#define LIBCRAILS_VERSION_MINOR $crails.version.minor$
-#define LIBCRAILS_VERSION_PATCH $crails.version.patch$
+#define LIBCRAILS_VERSION_MAJOR $libcrails.version.major$
+#define LIBCRAILS_VERSION_MINOR $libcrails.version.minor$
+#define LIBCRAILS_VERSION_PATCH $libcrails.version.patch$
 
-#define LIBCRAILS_PRE_RELEASE   $crails.version.pre_release$
+#define LIBCRAILS_PRE_RELEASE   $libcrails.version.pre_release$
 
-#define LIBCRAILS_SNAPSHOT_SN   $crails.version.snapshot_sn$ULL
-#define LIBCRAILS_SNAPSHOT_ID   "$crails.version.snapshot_id$"
+#define LIBCRAILS_SNAPSHOT_SN   $libcrails.version.snapshot_sn$ULL
+#define LIBCRAILS_SNAPSHOT_ID   "$libcrails.version.snapshot_id$"
