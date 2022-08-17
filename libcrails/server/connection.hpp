@@ -24,6 +24,14 @@ namespace Crails
 
     const HttpRequest& get_request() const { return request; }
     HttpResponse&      get_response() { return response; }
+    boost::beast::tcp_stream& get_stream() { return stream; }
+
+    template<typename CONNECTION>
+    std::shared_ptr<CONNECTION> move_to()
+    {
+      auto new_connection = std::shared_ptr<CONNECTION>(*this);
+      return new_connection;
+    }
 
   private:
     void expect_read();
