@@ -1,6 +1,5 @@
 #include <boost/filesystem.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <stdlib.h>
 #include "server/listener.hpp"
 #include "server.hpp"
 #include "logger.hpp"
@@ -73,12 +72,10 @@ void Server::launch(int argc, const char **argv)
     server.initialize_pid_file(options.get_pidfile_path());
     listener->run();
     initialize_segvcatch(&CrailsServer::throw_crash_segv);
+    logger << Logger::Info << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl;
     get_io_context().run();
     if (server.marked_for_restart)
-    {
-      sleep(2000);
       server.fork(argc, argv);
-    }
   }
   else
     logger << Logger::Error << "!! Could not listen on endpoint: " << error.message() << Logger::endl;

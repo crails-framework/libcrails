@@ -40,7 +40,7 @@ void Context::run_parser(Server::RequestParsers::const_iterator it, function<voi
     {
       auto self = shared_from_this();
 
-      (**it)(*connection, response, params, [self, it, callback](RequestParser::Status status)
+      (**it)(*this, [self, it, callback](RequestParser::Status status)
       {
         if (status == RequestParser::Abort)
           callback(false);

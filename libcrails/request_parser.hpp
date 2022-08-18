@@ -7,8 +7,9 @@
 
 namespace Crails
 {
-  class Params;
+  class Context;
   class BuildingResponse;
+  class Params;
 
   class RequestParser
   {
@@ -22,21 +23,21 @@ namespace Crails
 
     virtual ~RequestParser() {}
     
-    virtual void operator()(Connection&, BuildingResponse&, Params&, std::function<void(Status)>) const = 0;
+    virtual void operator()(Context&, std::function<void(Status)>) const = 0;
   protected:
-    bool content_type_matches(Params&, const std::regex) const;
+    bool content_type_matches(const HttpRequest&, const std::regex) const;
   };
 
   class BodyParser : public RequestParser
   {
   public:
-    void wait_for_body(Connection&, BuildingResponse&, Params&, std::function<void()>) const;
+    void wait_for_body(Context&, std::function<void()>) const;
   protected:
-    virtual void body_received(Connection&, BuildingResponse&, Params&, const std::string& body) const = 0;
+    virtual void body_received(Context&, const std::string& body) const = 0;
   private:
     struct PendingBody
     {
-      PendingBody(Connection&, BuildingResponse&, Params&);
+      PendingBody(Context&);
 
       Connection&           connection;
       BuildingResponse&     out;
