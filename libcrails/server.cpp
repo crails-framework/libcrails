@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <stdlib.h>
 #include "server/listener.hpp"
 #include "server.hpp"
 #include "logger.hpp"
@@ -38,7 +39,7 @@ Server::Server(unsigned short thread_count)
 {
   io_context = make_shared<boost::asio::io_context>(thread_count);
   boost::asio::signal_set stop_signals  (*io_context, SIGINT, SIGTERM);
-  boost::asio::signal_set restart_signal(*io_context, SIGUSR1);
+  boost::asio::signal_set restart_signal(*io_context, SIGUSR2);
 
   logger << ">> Pool Thread Size: " << thread_count << Logger::endl;
   stop_signals  .async_wait(bind(&Server::stop, this));
@@ -74,7 +75,10 @@ void Server::launch(int argc, const char **argv)
     initialize_segvcatch(&CrailsServer::throw_crash_segv);
     get_io_context().run();
     if (server.marked_for_restart)
+    {
+      sleep(2000);
       server.fork(argc, argv);
+    }
   }
   else
     logger << Logger::Error << "!! Could not listen on endpoint: " << error.message() << Logger::endl;

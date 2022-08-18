@@ -12,7 +12,7 @@ ProgramOptions::ProgramOptions(int argc, const char** argv)
   program_options::options_description desc("Options");
 
   desc.add_options()
-    ("port,p",     program_options::value<std::string>(),    "listened port")
+    ("port,p",     program_options::value<unsigned short>(), "listened port")
     ("hostname,h", program_options::value<std::string>(),    "listened host")
     ("threads,t",  program_options::value<unsigned short>(), "amount of threads")
     ("pidfile",    program_options::value<std::string>(),    "pid file")
