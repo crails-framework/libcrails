@@ -27,10 +27,12 @@ namespace Crails
     {
       std::string message = "cannot find shared variable `" + name + '`';
 
+      output_shared_vars(vars);
       throw boost_ext::out_of_range(message.c_str());
     }
     catch (boost::bad_any_cast& e)
     {
+      output_shared_vars(vars);
       throw boost_ext::runtime_error("could not cast `" + name + "` from " + var.type().name() + " to " + typeid(T).name());
     }
   }

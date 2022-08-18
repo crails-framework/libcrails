@@ -42,8 +42,8 @@ Server::Server(unsigned short thread_count)
   boost::asio::signal_set restart_signal(*io_context, SIGUSR2);
 
   logger << ">> Pool Thread Size: " << thread_count << Logger::endl;
-  stop_signals  .async_wait(bind(&Server::stop, this));
-  restart_signal.async_wait(bind(&Server::restart, this));
+  //stop_signals  .async_wait(bind(&Server::stop, this));
+  //restart_signal.async_wait(bind(&Server::restart, this));
   initialize_exception_catcher();
   initialize_request_pipe();
 }
