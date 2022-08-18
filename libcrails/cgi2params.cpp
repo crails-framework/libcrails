@@ -2,11 +2,16 @@
 #include <regex>
 #include "url.hpp"
 #include "datatree.hpp"
+#include <string_view>
 
 using namespace std;
 using namespace Crails;
 
-static void recursively_set_value(Data param, std::vector<std::string> key_stack, const std::string& value)
+static const string_view opening_bracket = "%5B";
+static const string_view closing_bracket = "%5D";
+static const regex regexp("[^=&]*", regex_constants::ECMAScript | regex_constants::optimize);
+
+static void recursively_set_value(Data param, vector<string> key_stack, const string& value)
 {
   if (key_stack.size() == 0)
     param = Url::decode(value);
@@ -31,61 +36,60 @@ static void recursively_set_value(Data param, std::vector<std::string> key_stack
   }
 }
 
-void cgi2params(const Data& params, const std::string& encoded_str)
+namespace Crails
 {
-  const std::string        opening_bracket = "%5B";
-  const std::string        closing_bracket = "%5D";
-  std::string              str             = encoded_str;
-  std::string              looping         = "";
-  std::vector<std::string> key_stacks;
-
-  while (str.size())
+  void cgi2params(const Data& params, const string& encoded_str)
   {
-    if (str == looping)
-      return ;
-    regex regexp("[^=&]*", regex_constants::ECMAScript);
-    auto  matches = sregex_iterator(str.begin(), str.end(), regexp);
+    string str(encoded_str);
+    string looping;
+    vector<string> key_stacks;
 
-    looping = str;
-    if (distance(matches, sregex_iterator()) > 0)
+    while (str.length())
     {
-      auto sub_key = str.find(opening_bracket);
-      smatch match = *matches;
-      auto   eo    = match.length(0);
+      if (str == looping)
+        return ;
+      auto matches = sregex_iterator(str.begin(), str.end(), regexp);
 
-      if (sub_key != std::string::npos && (int)sub_key < match.position(0) + eo)
-        eo = sub_key - match.position(0);
-      key_stacks.push_back(str.substr(match.position(0), eo));
-      str.erase(match.position(0), eo);
+      looping = str;
+      if (distance(matches, sregex_iterator()) > 0)
+      {
+        auto sub_key = str.find(opening_bracket);
+        smatch match = *matches;
+        auto   eo    = match.length(0);
 
-      while (str.find(opening_bracket) == 0)
-      {
-        str.erase(0, opening_bracket.size());
-        auto end_key = str.find(closing_bracket);
-        if (end_key != std::string::npos)
+        if (sub_key != string::npos && (int)sub_key < match.position(0) + eo)
+          eo = sub_key - match.position(0);
+        key_stacks.push_back(str.substr(match.position(0), eo));
+        str.erase(match.position(0), eo);
+        while (str.find(opening_bracket) == 0)
         {
-          key_stacks.push_back(str.substr(0, end_key));
-          str.erase(0, end_key + closing_bracket.size());
+          str.erase(0, opening_bracket.length());
+          auto end_key = str.find(closing_bracket);
+          if (end_key != string::npos)
+          {
+            key_stacks.push_back(str.substr(0, end_key));
+            str.erase(0, end_key + closing_bracket.length());
+          }
+          else
+            return ;
         }
-        else
-          return ;
-      }
-      if (str[0] == '=')
-      {
-        str.erase(0, 1);
-        matches = sregex_iterator(str.begin(), str.end(), regexp);
-        if (distance(matches, sregex_iterator()) > 0)
+        if (str[0] == '=')
         {
-          match = *matches;
-          recursively_set_value(params, key_stacks, str.substr(match.position(0), match.length(0)));
-          key_stacks.clear();
-          str.erase(match.position(0), match.length(0));
+          str.erase(0, 1);
+          matches = sregex_iterator(str.begin(), str.end(), regexp);
+          if (distance(matches, sregex_iterator()) > 0)
+          {
+            match = *matches;
+            recursively_set_value(params, key_stacks, str.substr(match.position(0), match.length(0)));
+            key_stacks.clear();
+            str.erase(match.position(0), match.length(0));
+          }
         }
+        if (str[0] == '&')
+          str.erase(0, 1);
       }
-      if (str[0] == '&')
-        str.erase(0, 1);
+      else
+        return ;
     }
-    else
-      return ;
   }
 }
