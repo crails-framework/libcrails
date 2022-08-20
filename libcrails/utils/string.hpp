@@ -23,17 +23,23 @@ namespace Crails
   std::string            base64_encode(const std::string& str_to_encode);
   std::string            base64_decode(const std::string& str_to_decode);
 
-  template<typename LIST>
-  std::string join(const LIST& list, char separator = 0)
+  template<typename ITERATOR>
+  std::string join(ITERATOR begin, ITERATOR end, char separator = 0)
   {
     std::stringstream stream;
 
-    for (auto it = list.begin() ; it != list.end() ; ++it)
+    for (ITERATOR it = begin; it != end ; ++it)
     {
-      if (separator && it != list.begin()) stream << separator;
+      if (separator && it != begin) stream << separator;
       stream << *it;
     }
     return stream.str();
+  }
+
+  template<typename LIST>
+  std::string join(const LIST& list, char separator = 0)
+  {
+    return join(list.begin(), list.end(), separator);
   }
 }
 
