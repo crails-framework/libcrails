@@ -1,8 +1,11 @@
-#ifndef  SMART_POINTER
-# define SMART_POINTER
+#ifndef  CRAILS_SAFE_POINTER_HPP
+# define CRAILS_SAFE_POINTER_HPP
 
 # include <memory>
 # include <crails/utils/backtrace.hpp>
+# ifndef safe_ptr_base
+#  define safe_ptr_base std::shared_ptr
+# endif
 
 struct NullPointerException : public boost_ext::exception
 {
@@ -14,25 +17,25 @@ public:
 };
 
 template<typename T>
-class safe_ptr : public std::shared_ptr<T>
+class safe_ptr : public safe_ptr_base<T>
 {
 public:
   safe_ptr()
   {
   }
 
-  safe_ptr(T* ptr) : std::shared_ptr<T>(ptr)
+  safe_ptr(T* ptr) : safe_ptr_base<T>(ptr)
   {
   }
 
   template<typename CPY>
-  safe_ptr(CPY& cpy) : std::shared_ptr<T>(cpy)
+  safe_ptr(CPY& cpy) : safe_ptr_base<T>(cpy)
   {
   }
 
-  safe_ptr& operator=(const std::shared_ptr<T>& cpy)
+  safe_ptr& operator=(const safe_ptr_base<T>& cpy)
   {
-    std::shared_ptr<T>::operator=(cpy);
+    safe_ptr_base<T>::operator=(cpy);
     return *this;
   }
 
@@ -42,8 +45,8 @@ public:
       throw NullPointerException();
     return (this->get());
   }
-  
-  T& operator*(void) const
+
+  T& operator*() const
   {
     if (this->get() == 0)
       throw NullPointerException();

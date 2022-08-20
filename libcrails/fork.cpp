@@ -1,5 +1,6 @@
 #include "server.hpp"
 #include "logger.hpp"
+#include <stdlib.h>
 
 using namespace Crails;
 
