@@ -24,7 +24,10 @@ void BodyParser::wait_for_body(Context& context, function<void()> finished_callb
   shared_ptr<PendingBody> pending_body = make_shared<PendingBody>(context);
 
   if (pending_body->total_read >= pending_body->to_read)
+  {
+    body_received(context, context.connection->get_request().body());
     finished_callback();
+  }
   else
     throw std::runtime_error("BoddyParser: Asynchronous body reception not implemented");
 }
