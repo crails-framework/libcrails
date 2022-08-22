@@ -60,6 +60,7 @@ void Connection::write()
 
 void Connection::on_write(bool keep_alive, beast::error_code ec, std::size_t)
 {
+  keep_alive = false; // keep_alive apparently causes issues with the action request handler
   if (!ec && keep_alive)
     expect_read();
   else
