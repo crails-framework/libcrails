@@ -9,7 +9,8 @@ namespace Crails
     unsigned short w_begin, w_end;
     bool           got_begin = false;
 
-    for (unsigned short i = 0 ; i < str.size() ; ++i)
+    if (str.length() == 0) return str;
+    for (unsigned short i = 0 ; i < str.length() ; ++i)
     {
       if (str[i] != character)
       {
@@ -71,8 +72,8 @@ namespace Crails
 
   string underscore(const string& tmp)
   {
-    string         str = strip(tmp);
-    string         ret;
+    string str = strip(tmp);
+    string ret;
 
     for (unsigned short i = 0 ;  i < str.size() ; ++i)
     {
