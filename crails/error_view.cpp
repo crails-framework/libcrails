@@ -1,8 +1,8 @@
 #include "http_response.hpp"
 #include "params.hpp"
 #include "request_handlers/file.hpp"
-#include "shared_vars.hpp"
-#include "renderer.hpp"
+#include <crails/shared_vars.hpp>
+#include <crails/renderer.hpp>
 #include "logger.hpp"
 
 using namespace std;

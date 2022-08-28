@@ -2,12 +2,13 @@
 name: libcrails
 version: 2.0.0
 summary: main library of the crails framework
-license: BSD-C3
+license: BSD-3-Clause
 description-file: README.md
 url: https://github.com/crails-framework/libcrails.git
 email: michael@unetresgrossebite.com
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
-depends: libcrails-semantics >= 2.0.0
+depends: libbacktrace ^1.0.0
+depends: { libcrails-semantics libcrails-readfile libcrails-renderer libdatatree } >= 2.0.0
 depends: { libboost-beast libboost-program-options libboost-thread libboost-random libboost-filesystem libboost-system } >= 1.74.0
 depends: libssl ~1.1.1

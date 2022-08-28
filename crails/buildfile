@@ -1,6 +1,9 @@
 intf_libs = # Interface dependencies.
 impl_libs = # Implementation dependencies.
-#import xxxx_libs += libhello%lib{hello}
+import libs += crails%lib{datatree}
+import libs += crails%lib{crails-semantics}
+import libs += crails%lib{crails-readfile}
+import libs += crails%lib{crails-renderer}
 
 lib{crails}: {hxx ixx txx cxx}{** -version} hxx{version} $impl_libs $intf_libs
 

@@ -2,7 +2,6 @@
 # define NO_SESSION_STORE
 
 # include "../session_store.hpp"
-# include "../datatree.hpp"
 
 namespace Crails
 {

@@ -2,7 +2,7 @@
 # define SESSION_STORE_HPP
 
 # include "http.hpp"
-# include "datatree.hpp"
+# include <crails/datatree.hpp>
 
 # define USE_SESSION_STORE(classname) \
 std::unique_ptr<Crails::SessionStore> Crails::SessionStore::Factory(void) \

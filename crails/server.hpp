@@ -4,7 +4,7 @@
 # include "http.hpp"
 # include "file_cache.hpp"
 # include "exception_catcher.hpp"
-# include "datatree.hpp"
+# include <crails/datatree.hpp>
 
 namespace Crails
 {

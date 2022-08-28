@@ -1,7 +1,7 @@
 #ifndef  SINGLETON_HPP
 # define SINGLETON_HPP
 
-# include "backtrace.hpp"
+# include <crails/utils/backtrace.hpp>
 
 # define SINGLETON(type) \
 public:\

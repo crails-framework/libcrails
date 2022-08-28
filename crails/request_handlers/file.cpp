@@ -3,7 +3,7 @@
 #include "../logger.hpp"
 #include "../mimetype.hpp"
 #include "../http.hpp"
-#include "../utils/string.hpp"
+#include <crails/utils/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <time.h>
