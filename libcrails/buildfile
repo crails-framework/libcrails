@@ -1,13 +1,14 @@
 intf_libs = # Interface dependencies.
 impl_libs = # Implementation dependencies.
-import libs += crails%lib{datatree}
-import libs += crails%lib{crails-semantics}
-import libs += crails%lib{crails-readfile}
-import libs += crails%lib{crails-renderer}
+import intf_libs += libbacktrace%lib{backtrace}
+import intf_libs += libdatatree%lib{datatree}
+import intf_libs += libcrails-semantics%lib{crails-semantics}
+import intf_libs += libcrails-readfile%lib{crails-readfile}
+import intf_libs += libcrails-renderer%lib{crails-renderer}
 
-lib{crails}: {hxx ixx txx cxx}{** -version} hxx{version} $impl_libs $intf_libs
+lib{crails}: {hxx ixx txx cxx}{** -crails/version} hxx{crails/version} $impl_libs $intf_libs
 
-hxx{version}: in{version} $src_root/manifest
+hxx{crails/version}: in{crails/version} $src_root/manifest
 
 hxx{export}@./: cxx.importable = false
 
@@ -22,7 +23,7 @@ cxx.poptions =+ "-I$out_root" "-I$src_root"
 #
 lib{crails}:
 {
-  cxx.export.poptions = "-I$out_root" "-I$src_root"
+  cxx.export.poptions = "-I$out_root/libcrails/" "-I$src_root/libcrails/"
   cxx.export.libs = $intf_libs
 }
 
@@ -43,6 +44,6 @@ else
 #
 {hxx ixx txx}{*}:
 {
-  install         = include/crails/
+  install         = include/
   install.subdirs = true
 }
