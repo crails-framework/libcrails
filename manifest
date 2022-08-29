@@ -10,5 +10,5 @@ depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libbacktrace ^1.0.0
 depends: { libcrails-semantics libcrails-readfile libcrails-renderer libdatatree } >= 2.0.0
-depends: { libboost-beast libboost-program-options libboost-thread libboost-random libboost-filesystem libboost-system } >= 1.74.0
+depends: { libboost-beast libboost-program-options libboost-thread libboost-filesystem libboost-system } >= 1.74.0
 depends: libssl ~1.1.1
