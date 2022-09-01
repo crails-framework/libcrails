@@ -19,6 +19,7 @@ namespace Crails
 
     bool listen(boost::asio::ip::tcp::endpoint, boost::beast::error_code&);
     void run();
+    void stop();
   private:
     void wait_accept();
     void on_accept(boost::beast::error_code);

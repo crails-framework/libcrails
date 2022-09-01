@@ -52,7 +52,7 @@ namespace Crails
     void add_request_handler(RequestHandler* request_handler);
     void add_request_parser(RequestParser* request_parser);
     void on_interrupted(const boost::system::error_code&, int);
-    void fork(int argc, const char** argv);
+    void do_restart(int argc, const char** argv);
 
     static std::shared_ptr<boost::asio::io_context> io_context;
     static RequestParsers    request_parsers;

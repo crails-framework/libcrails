@@ -1,6 +1,6 @@
 #include "server.hpp"
 #include "logger.hpp"
-#include <stdlib.h>
+#include <unistd.h>
 
 using namespace Crails;
 
@@ -20,18 +20,12 @@ static char** duplicate_arguments(int argc, const char** argv)
   return arguments;
 }
 
-void Server::fork(int argc, const char** original_argv)
+void Server::do_restart(int argc, const char** original_argv)
 {
-  pid_t  pid  = ::fork();
   char** argv = duplicate_arguments(argc, original_argv);
 
-  switch (pid)
-  {
-    default:
-      execve(argv[0], argv, nullptr);
-    case -1:
-      logger << Logger::Error << "!! Failed to restart server" << Logger::endl;
-    case 0:
-      break ;
-  }
+  execve(argv[0], argv, nullptr);
+  logger << Logger::Error << "!! execve failed, the server won't restart" << Logger::endl;
+  for (int i = 0 ; argv[i] ; ++i) delete[] argv[i];
+  delete[] argv;
 }

@@ -31,6 +31,14 @@ void Listener::run()
   wait_accept();
 }
 
+void Listener::stop()
+{
+  boost::system::error_code ec;
+
+  acceptor.cancel(ec);
+  acceptor.close(ec);
+}
+
 void Listener::wait_accept()
 {
   acceptor.async_accept(
