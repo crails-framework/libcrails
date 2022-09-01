@@ -17,17 +17,17 @@ Context::Context(const Server& server, Connection& connection) :
 
 Context::~Context()
 {
-  logger << Logger::Info << "Context DESTROYED" << Logger::endl;
+  logger << Logger::Debug << "Crails::Context destroyed" << Logger::endl;
 }
 
 void Context::run()
 {
-  logger << Logger::Info << "Context::run BEGIN" << Logger::endl;
+  logger << Logger::Debug << "Crails::Context: pipeline start" << Logger::endl;
   run_parser(
     server.request_parsers.begin(),
     bind(&Context::on_parsed, this, placeholders::_1)
   );
-  logger << Logger::Info << "Context::run END" << Logger::endl;
+  logger << Logger::Debug << "Crails::Context: pipeline end" << Logger::endl;
 }
 
 void Context::run_parser(Server::RequestParsers::const_iterator it, function<void(bool)> callback)

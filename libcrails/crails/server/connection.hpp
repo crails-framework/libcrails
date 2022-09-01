@@ -25,6 +25,7 @@ namespace Crails
     const HttpRequest& get_request() const { return request; }
     HttpResponse&      get_response() { return response; }
     boost::beast::tcp_stream& get_stream() { return stream; }
+    const std::string& get_connection_id() const { return connection_id; }
 
     template<typename CONNECTION>
     std::shared_ptr<CONNECTION> move_to()
@@ -43,6 +44,7 @@ namespace Crails
     boost::beast::flat_buffer buffer{8192};
     HttpRequest               request{};
     HttpResponse              response{};
+    std::string               connection_id;
   };
 }
 

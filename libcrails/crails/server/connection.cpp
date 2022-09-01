@@ -1,10 +1,13 @@
 #include <boost/asio/dispatch.hpp>
+#include <sstream>
 #include "connection.hpp"
 #include "../logger.hpp"
 #include "../context.hpp"
 
 using namespace Crails;
 using namespace boost;
+
+template<typename Socket> static std::string socket_description(Socket& socket) { return socket.remote_endpoint().address().to_string(); }
 
 Connection::Connection(const Server& server_, HttpRequest request) :
   server(server_),
@@ -16,12 +19,18 @@ Connection::Connection(const Server& server_, asio::ip::tcp::socket socket_) :
   server(server_),
   stream(std::move(socket_))
 {
-  logger << Logger::Info << "Crails::Connection opened" << Logger::endl;
+  static thread_local unsigned int i = 0;
+  std::stringstream id_stream;
+
+  id_stream << socket_description(stream.socket()) << '/' << std::this_thread::get_id() << '/' << ++i;
+  connection_id = id_stream.str();
+  logger << Logger::Info << "Crails::Connection opened: " << connection_id << Logger::endl;
+  beast::get_lowest_layer(stream).expires_after(std::chrono::seconds(3));
 }
 
 Connection::~Connection()
 {
-  logger << Logger::Info << "Crails::Connection closed" << Logger::endl;
+  logger << Logger::Info << "Crails::Connection closed: " << connection_id << Logger::endl;
 }
 
 void Connection::start()
@@ -47,7 +56,7 @@ void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
   if (!ec)
     std::make_shared<Context>(server, *this)->run();
   else if (ec != boost::asio::error::eof && ec != boost::asio::error::timed_out)
-    logger << Logger::Error << "!! Crails failed to read on socket: " << ec.message() << Logger::endl;
+    logger << Logger::Debug << "!! Crails failed to read on socket: " << ec.message() << Logger::endl;
 }
 
 void Connection::write()
@@ -60,7 +69,8 @@ void Connection::write()
 
 void Connection::on_write(bool keep_alive, beast::error_code ec, std::size_t)
 {
-  keep_alive = false; // keep_alive apparently causes issues with the action request handler
+  request = {};
+  response = {};
   if (!ec && keep_alive)
     expect_read();
   else
