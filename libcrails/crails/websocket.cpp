@@ -1,22 +1,20 @@
 #include <boost/asio/dispatch.hpp>
 #include "websocket.hpp"
-#include "server/connection.hpp"
+#include "context.hpp"
 #include "logger.hpp"
 
 using namespace Crails;
 
-WebSocket::WebSocket(Connection& connection) : stream(std::move(connection.get_stream().socket())),
+WebSocket::WebSocket(Context& context) : stream(std::move(context.connection->get_stream().socket())),
   dynamic_buffer(boost::asio::dynamic_buffer(receive_buffer))
 {
   receive_buffer.reserve(4096);
   send_buffer.reserve(4096);
 }
 
-void WebSocket::run()
+void WebSocket::accept(const HttpRequest& request)
 {
-  boost::asio::dispatch(stream.get_executor(),
-    boost::beast::bind_front_handler(&WebSocket::on_run, shared_from_this())
-  );
+  stream.accept(request);
 }
 
 void WebSocket::read()

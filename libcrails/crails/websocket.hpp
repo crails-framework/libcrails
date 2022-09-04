@@ -1,18 +1,19 @@
 #ifndef  CRAILS_WEBSOCKET_HPP
 # define CRAILS_WEBSOCKET_HPP
 
+# include "http.hpp"
 # include <boost/beast/core.hpp>
 # include <boost/beast/websocket.hpp>
 # include <boost/asio/buffer.hpp>
 
 namespace Crails
 {
-  class Connection;
+  class Context;
 
   class WebSocket : public std::enable_shared_from_this<WebSocket>
   {
   protected:
-    WebSocket(Connection& connection);
+    WebSocket(Context& connection);
   public:
     enum MessageType
     {
@@ -20,6 +21,7 @@ namespace Crails
       BinaryMessage
     };
 
+    void accept(const HttpRequest&);
     void run();
     void read();
     void send(const std::string& message, MessageType type = TextMessage);
