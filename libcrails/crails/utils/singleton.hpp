@@ -13,7 +13,7 @@ template<typename TYPE, typename... Args>
 class Singleton
 {
 public:
-  static void Initialize(Args... args)
+  static void initialize(Args... args)
   {
     if (!(ptr))
       ptr = new TYPE(args...);
@@ -21,7 +21,7 @@ public:
       throw boost_ext::runtime_error("Was already initialized");
   }
 
-  static void Finalize(void)
+  static void finalize(void)
   {
     if (ptr)
     {
@@ -30,11 +30,10 @@ public:
     }
   }
 
-  static TYPE*  Get(void) { return (ptr); }
+  static TYPE*  get(void) { return (ptr); }
 
 private:
   static TYPE* ptr;
-  static int   val;
 };
 
 template<typename TYPE, typename... Args>
@@ -42,15 +41,15 @@ struct SingletonInstantiator
 {
   SingletonInstantiator(Args... args)
   {
-    Singleton<TYPE, Args...>::Initialize(args...);
+    Singleton<TYPE, Args...>::initialize(args...);
   }
 
   ~SingletonInstantiator()
   {
-    Singleton<TYPE, Args...>::Finalize();
+    Singleton<TYPE, Args...>::finalize();
   }
 
-  TYPE* operator->() const { return Singleton<TYPE, Args...>::Get(); }
+  TYPE* operator->() const { return Singleton<TYPE, Args...>::get(); }
 };
 
 template<typename TYPE, typename... Args> TYPE* Singleton<TYPE, Args...>::ptr = 0;
