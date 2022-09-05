@@ -5,6 +5,8 @@
 # include <boost/beast/core.hpp>
 # include <boost/beast/websocket.hpp>
 # include <boost/asio/buffer.hpp>
+# include <list>
+# include <mutex>
 
 namespace Crails
 {
@@ -21,6 +23,8 @@ namespace Crails
       BinaryMessage
     };
 
+    typedef std::pair<std::string, MessageType> Message;
+
     void accept(const HttpRequest&);
     void run();
     void read();
@@ -34,11 +38,15 @@ namespace Crails
     void on_accept(boost::beast::error_code ec);
     void on_read(boost::beast::error_code ec, std::size_t);
     void on_write(boost::beast::error_code ec, std::size_t);
+    void write_next_message();
 
     boost::beast::websocket::stream<boost::beast::tcp_stream> stream;
-    std::string               receive_buffer;
-    std::string               send_buffer;
     boost::asio::dynamic_string_buffer<char, std::char_traits<char>, std::allocator<char>> dynamic_buffer;
+    std::string        receive_buffer;
+    std::list<Message> send_buffers;
+    bool               reading = false;
+    bool               writing = false;
+    std::mutex         write_mutex;
   };
 }
 
