@@ -8,11 +8,14 @@ namespace Crails
   enum Environment
   {
     Production,
+    Staging,
     Development,
     Test
   };
 
   extern Environment environment;
+
+  std::string environment_name(Environment);
 }
 
 #endif
