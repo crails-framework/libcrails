@@ -81,7 +81,10 @@ void WebSocket::on_read(boost::beast::error_code ec, std::size_t)
 {
   reading = false;
   if (!ec)
+  {
     received(receive_buffer, stream.got_text() ? TextMessage : BinaryMessage);
+    receive_buffer.resize(0);
+  }
   else
   {
     if (ec == boost::beast::websocket::error::closed)
