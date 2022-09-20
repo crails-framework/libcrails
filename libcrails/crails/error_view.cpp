@@ -51,7 +51,7 @@ namespace Crails
       }
       catch (const MissingTemplate& exception) {
         logger << Logger::Warning
-          << "# Template lib/exception not found for format "
+          << "# Template exception not found for format "
           << context.params["headers"]["Accept"].defaults_to<string>("")
           << Logger::endl;
       }

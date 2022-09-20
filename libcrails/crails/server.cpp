@@ -4,6 +4,7 @@
 #include "server.hpp"
 #include "logger.hpp"
 #include "program_options.hpp"
+#include "log_files.hpp"
 #include "request_parser.hpp"
 #include "request_handler.hpp"
 #ifdef USE_SEGVCATCH
@@ -57,8 +58,10 @@ Server::~Server()
 
 void Server::launch(int argc, const char **argv)
 {
+  typedef SingletonInstantiator<LogFiles, const ProgramOptions&> LogFilesInstance;
   logger << Logger::Info << "## Launching the amazing Crails Server ##" << Logger::endl;
   const ProgramOptions     options(argc, argv);
+  LogFilesInstance         log_files(options);
   Server                   server(options.get_thread_count());
   auto                     listener = make_shared<Listener>(server);
   boost::beast::error_code error;

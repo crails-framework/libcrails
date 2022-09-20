@@ -16,6 +16,8 @@ ProgramOptions::ProgramOptions(int argc, const char** argv)
     ("hostname,h", program_options::value<std::string>(),    "listened host")
     ("threads,t",  program_options::value<unsigned short>(), "amount of threads")
     ("pidfile",    program_options::value<std::string>(),    "pid file")
+    ("log,l",      program_options::value<std::string>(),    "log output")
+    ("errors,e",   program_options::value<std::string>(),    "error log output")
     ;
   program_options::store(program_options::parse_command_line(argc, argv, desc), vm);
   program_options::notify(vm);

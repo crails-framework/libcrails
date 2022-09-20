@@ -14,7 +14,9 @@ namespace Crails
     boost::asio::ip::tcp::endpoint get_endpoint() const;
     unsigned short                 get_thread_count() const;
     std::string                    get_pidfile_path() const;
-    
+    std::string                    get_log_file() const { return get_value<std::string>("log", ""); }
+    std::string                    get_error_log_file() const { return get_value<std::string>("log", ""); }
+
   private:
     template<typename T>
     T get_value(const std::string& option_name, const T& default_value) const
