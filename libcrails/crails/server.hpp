@@ -41,7 +41,7 @@ namespace Crails
 
     static RequestHandler*          get_request_handler(const std::string& name);
     static FileCache&               get_file_cache() { return file_cache; }
-    static boost::asio::io_context& get_io_context() { return *(io_context.get()); }
+    static boost::asio::io_context& get_io_context();
 
   private:
     static void throw_crash_segv();
@@ -54,7 +54,6 @@ namespace Crails
     void on_interrupted(const boost::system::error_code&, int);
     void do_restart(int argc, const char** argv);
 
-    static std::shared_ptr<boost::asio::io_context> io_context;
     static RequestParsers    request_parsers;
     static RequestHandlers   request_handlers;
     static FileCache         file_cache;

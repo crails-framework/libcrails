@@ -20,7 +20,6 @@ using namespace Crails;
 Crails::FileCache       Server::file_cache;
 Server::RequestParsers  Server::request_parsers;
 Server::RequestHandlers Server::request_handlers;
-shared_ptr<boost::asio::io_context> Server::io_context;
 
 static string initialize_public_path()
 {
@@ -37,8 +36,6 @@ const string Server::public_path = initialize_public_path();
 
 Server::Server(unsigned short thread_count)
 {
-  io_context = make_shared<boost::asio::io_context>(thread_count);
-
   logger << ">> Pool Thread Size: " << thread_count << Logger::endl;
   initialize_exception_catcher();
   initialize_request_pipe();
@@ -56,6 +53,13 @@ Server::~Server()
   });
 }
 
+boost::asio::io_context& Server::get_io_context()
+{
+  static boost::asio::io_context io_context;
+
+  return io_context;
+}
+
 void Server::launch(int argc, const char **argv)
 {
   typedef SingletonInstantiator<LogFiles, const ProgramOptions&> LogFilesInstance;
@@ -68,15 +72,16 @@ void Server::launch(int argc, const char **argv)
 
   if (listener->listen(options.get_endpoint(), error))
   {
-    boost::asio::signal_set stop_signals  (*io_context, SIGINT, SIGTERM);
-    boost::asio::signal_set restart_signal(*io_context, SIGUSR2);
+    boost::asio::io_context& io_context = get_io_context();
+    boost::asio::signal_set stop_signals  (io_context, SIGINT, SIGTERM);
+    boost::asio::signal_set restart_signal(io_context, SIGUSR2);
     server.initialize_pid_file(options.get_pidfile_path());
     listener->run();
     initialize_segvcatch(&CrailsServer::throw_crash_segv);
     logger << Logger::Info << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl;
     stop_signals  .async_wait(std::bind(&Server::stop, &server));
     restart_signal.async_wait(std::bind(&Server::restart, &server));
-    get_io_context().run();
+    io_context.run();
     listener->stop();
     if (server.marked_for_restart)
       server.do_restart(argc, argv);
