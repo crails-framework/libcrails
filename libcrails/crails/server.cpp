@@ -7,6 +7,7 @@
 #include "log_files.hpp"
 #include "request_parser.hpp"
 #include "request_handler.hpp"
+#include <cstdlib>
 #ifdef USE_SEGVCATCH
 # include <segvcatch.h>
 # define initialize_segvcatch(listener) segvcatch::init_segv(listener)
@@ -23,11 +24,14 @@ Server::RequestHandlers Server::request_handlers;
 
 static string initialize_public_path()
 {
+  const char* environment_variable = std::getenv("PUBLIC_PATH");
+  const string non_canonical_path = environment_variable
+    ? boost::filesystem::current_path().string() + "/public"
+    : string(environment_variable);
+
   try
   {
-    return boost::filesystem::canonical(
-      boost::filesystem::current_path().string() + "/public"
-    ).string();
+    return boost::filesystem::canonical(non_canonical_path).string();
   } catch (...) { }
   return boost::filesystem::current_path().string();
 }
