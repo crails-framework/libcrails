@@ -1,4 +1,4 @@
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/asio/signal_set.hpp>
 #include "server/listener.hpp"
 #include "server.hpp"
@@ -25,15 +25,15 @@ Server::RequestHandlers Server::request_handlers;
 static string initialize_public_path()
 {
   const char* environment_variable = std::getenv("PUBLIC_PATH");
-  const string non_canonical_path = environment_variable
-    ? boost::filesystem::current_path().string() + "/public"
+  const string non_canonical_path = !environment_variable
+    ? filesystem::current_path().string() + "/public"
     : string(environment_variable);
 
   try
   {
-    return boost::filesystem::canonical(non_canonical_path).string();
+    return filesystem::canonical(non_canonical_path).string();
   } catch (...) { }
-  return boost::filesystem::current_path().string();
+  return filesystem::current_path().string();
 }
 
 const string Server::public_path = initialize_public_path();

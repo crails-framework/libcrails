@@ -4,7 +4,8 @@
 #include "../mimetype.hpp"
 #include "../http.hpp"
 #include <crails/utils/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
+#include <chrono>
 #include <boost/lexical_cast.hpp>
 #include <time.h>
 #include <string_view>
@@ -16,14 +17,15 @@ const vector<pair<string, string> > compression_strategies = {{"br", "br"}, {"gz
 
 static string filepath_from_uri(string uri)
 {
-  boost::system::error_code ec;
+  std::error_code ec;
   size_t separator = uri.find('?');
+  filesystem::path result;
 
   if (separator != std::string::npos)
     uri.erase(separator);
-  boost::filesystem::canonical(Server::public_path + uri, ec);
-  if (ec == boost::system::errc::success)
-    return boost::filesystem::absolute(Server::public_path + uri).string();
+  result = filesystem::canonical(Server::public_path + uri, ec);
+  if (!ec)
+    return result.string();
   return "";
 }
 
@@ -38,7 +40,7 @@ static void serve_compressed_file_if_possible(string& fullpath, BuildingResponse
 {
   for (const auto& strategy : compression_strategies)
   {
-    if (accepts_encoding(request, strategy.first) && boost::filesystem::exists(fullpath + '.' + strategy.second))
+    if (accepts_encoding(request, strategy.first) && filesystem::exists(fullpath + '.' + strategy.second))
     {
       response.set_header(HttpHeader::content_encoding, strategy.first);
       fullpath += '.' + strategy.second;
@@ -74,7 +76,7 @@ static std::time_t http_date_to_timestamp(boost::beast::string_view str)
 static bool if_not_modified(boost::beast::string_view str_time, BuildingResponse& response, const string& fullpath)
 {
   time_t condition_time = http_date_to_timestamp(str_time);
-  time_t modified_time  = boost::filesystem::last_write_time(fullpath);
+  time_t modified_time  = chrono::system_clock::to_time_t(chrono::file_clock::to_sys(filesystem::last_write_time(fullpath)));
 
   if (modified_time <= condition_time)
   {
@@ -108,7 +110,7 @@ bool FileRequestHandler::process(Context& context) const
     const auto range_field  = request.find(HttpHeader::range);
     const auto update_field = request.find(HttpHeader::if_modified_since);
 
-    if (boost::filesystem::is_directory(fullpath))
+    if (filesystem::is_directory(fullpath))
       fullpath += "/index.html";
     serve_compressed_file_if_possible(fullpath, context.response, request);
     if (range_field != request.end())

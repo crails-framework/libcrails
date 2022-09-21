@@ -22,7 +22,7 @@ struct LoggerId
   {
     static atomic<unsigned long> value(0);
 
-    id = ++value;
+    thread_id = ++value;
 #ifdef _WIN32
     pid = GetCurrentProcessId();
 #else
@@ -31,7 +31,7 @@ struct LoggerId
   }
 };
 
-static thread_local const ThreadId logger_id;
+static thread_local const LoggerId logger_id;
 
 #define log_prefix << '[' << logger_id.pid << 'T' << (logger_id.thread_id) << "] "
 

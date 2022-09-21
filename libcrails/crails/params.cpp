@@ -1,6 +1,6 @@
 #include "params.hpp"
 #include "session_store.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 using namespace std;
 using namespace Crails;
@@ -13,7 +13,7 @@ Params::Params(void)
 Params::~Params(void)
 {
   for (const File& file : files)
-    boost::filesystem::remove(file.temporary_path);
+    filesystem::remove(file.temporary_path);
 }
 
 const Params::File* Params::get_upload(const string& key) const
