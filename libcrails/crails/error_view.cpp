@@ -3,7 +3,7 @@
 #include "request_handlers/file.hpp"
 #include <crails/shared_vars.hpp>
 #include <crails/renderer.hpp>
-#include "logger.hpp"
+#include <crails/logger.hpp>
 
 using namespace std;
 

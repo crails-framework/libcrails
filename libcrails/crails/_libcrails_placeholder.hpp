@@ -1,5 +1,5 @@
 #pragma once
-#include "logger.hpp"
+#include <crails/logger.hpp>
 #include "renderer.hpp"
 #include "session_store.hpp"
 #include "session_store/no_session_store.hpp"

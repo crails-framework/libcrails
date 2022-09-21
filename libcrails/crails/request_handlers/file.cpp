@@ -1,9 +1,9 @@
 #include "../request_handlers/file.hpp"
 #include "../server.hpp"
-#include "../logger.hpp"
 #include "../mimetype.hpp"
 #include "../http.hpp"
 #include <crails/utils/string.hpp>
+#include <crails/logger.hpp>
 #include <filesystem>
 #include <chrono>
 #include <boost/lexical_cast.hpp>

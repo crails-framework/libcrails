@@ -1,7 +1,7 @@
 #include <boost/asio/dispatch.hpp>
 #include "websocket.hpp"
 #include "context.hpp"
-#include "logger.hpp"
+#include <crails/logger.hpp>
 
 using namespace Crails;
 

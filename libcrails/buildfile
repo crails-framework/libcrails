@@ -2,6 +2,7 @@ intf_libs = # Interface dependencies.
 impl_libs = # Implementation dependencies.
 import intf_libs += libbacktrace%lib{backtrace}
 import intf_libs += libdatatree%lib{datatree}
+import intf_libs += libcrails-logger%lib{crails-logger}
 import intf_libs += libcrails-semantics%lib{crails-semantics}
 import intf_libs += libcrails-readfile%lib{crails-readfile}
 import intf_libs += libcrails-renderer%lib{crails-renderer}

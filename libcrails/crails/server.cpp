@@ -2,7 +2,7 @@
 #include <boost/asio/signal_set.hpp>
 #include "server/listener.hpp"
 #include "server.hpp"
-#include "logger.hpp"
+#include <crails/logger.hpp>
 #include "program_options.hpp"
 #include "log_files.hpp"
 #include "request_parser.hpp"

@@ -1,7 +1,7 @@
 #include <boost/asio/strand.hpp>
 #include "listener.hpp"
 #include "connection.hpp"
-#include "../logger.hpp"
+#include <crails/logger.hpp>
 #include "../server.hpp"
 
 using namespace Crails;

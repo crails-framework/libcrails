@@ -1,6 +1,6 @@
 #include "request_parser.hpp"
 #include "context.hpp"
-#include "logger.hpp"
+#include <crails/logger.hpp>
 #include <boost/lexical_cast.hpp>
 
 using namespace std;

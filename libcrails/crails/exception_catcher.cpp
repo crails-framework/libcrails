@@ -1,8 +1,8 @@
+#include <crails/logger.hpp>
 #include "exception_catcher.hpp"
 #include "context.hpp"
 #include "server.hpp"
 #include "params.hpp"
-#include "logger.hpp"
 #include "environment.hpp"
 
 using namespace std;

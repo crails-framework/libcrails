@@ -1,5 +1,5 @@
 #include "server.hpp"
-#include "logger.hpp"
+#include <crails/logger.hpp>
 #include <unistd.h>
 
 using namespace Crails;

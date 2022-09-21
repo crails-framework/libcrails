@@ -1,7 +1,7 @@
+#include <crails/logger.hpp>
 #include "context.hpp"
 #include "request_parser.hpp"
 #include "request_handler.hpp"
-#include "logger.hpp"
 
 using namespace Crails;
 using namespace std;
