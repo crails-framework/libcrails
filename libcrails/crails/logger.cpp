@@ -2,15 +2,38 @@
 #include <iomanip>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
+#ifdef _WIN32
+# include <Windows.h>
+typedef DWORD pid_t;
+#else
+# include <unistd.h>
+#endif
 #include "logger.hpp"
-#include "thread_id.hpp"
-
-static thread_local ThreadId thread_id;
 
 using namespace std;
 using namespace Crails;
 
-#define log_prefix << "[T" << static_cast<unsigned long>(thread_id) << "] "
+struct LoggerId
+{
+  unsigned long thread_id;
+  pid_t         pid;
+
+  LoggerId()
+  {
+    static atomic<unsigned long> value(0);
+
+    id = ++value;
+#ifdef _WIN32
+    pid = GetCurrentProcessId();
+#else
+    pid = getpid();
+#endif
+  }
+};
+
+static thread_local const ThreadId logger_id;
+
+#define log_prefix << '[' << logger_id.pid << 'T' << (logger_id.thread_id) << "] "
 
 namespace Crails
 {
