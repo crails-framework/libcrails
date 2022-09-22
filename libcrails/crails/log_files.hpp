@@ -2,7 +2,7 @@
 # define CRAILS_LOG_FILES_HPP
 
 # include <crails/logger.hpp>
-# include <crails/utils/singleton.hpp>
+# include "utils/singleton.hpp"
 # include <fstream>
 
 namespace Crails

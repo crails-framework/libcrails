@@ -73,10 +73,20 @@ static std::time_t http_date_to_timestamp(boost::beast::string_view str)
   return 0;
 }
 
+template <typename TP>
+static std::time_t to_time_t(TP tp)
+{
+    using namespace std::chrono;
+    auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now()
+              + system_clock::now());
+    return system_clock::to_time_t(sctp);
+}
+
 static bool if_not_modified(boost::beast::string_view str_time, BuildingResponse& response, const string& fullpath)
 {
   time_t condition_time = http_date_to_timestamp(str_time);
-  time_t modified_time  = chrono::system_clock::to_time_t(chrono::file_clock::to_sys(filesystem::last_write_time(fullpath)));
+  time_t modified_time  = to_time_t(filesystem::last_write_time(fullpath));
+//time_t modified_time  = chrono::system_clock::to_time_t(chrono::file_clock::to_sys(filesystem::last_write_time(fullpath)));
 
   if (modified_time <= condition_time)
   {
