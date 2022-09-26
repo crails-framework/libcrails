@@ -1,7 +1,8 @@
 # N.B.: libboost-date-time isn't always header-only...
 #       but build2 package is header only, so this is kinda forced:
-libs = libboost-beast%lib{boost_beast} libboost-date-time%lib{boost_date_time}
-import intf_libs += libboost-program-options%lib{boost_program_options}
+import libs = libboost-beast%lib{boost_beast}
+import libs += libboost-date-time%lib{boost_date_time}
+import intf_libs = libboost-program-options%lib{boost_program_options}
 import intf_libs += libbacktrace%lib{backtrace}
 import intf_libs += libdatatree%lib{datatree}
 import intf_libs += libcrails-logger%lib{crails-logger}

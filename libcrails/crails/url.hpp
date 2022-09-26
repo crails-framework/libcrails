@@ -2,6 +2,7 @@
 # define CRAILS_URL_HPP
 
 # include <string>
+# include <sstream>
 
 class Data;
 
@@ -21,6 +22,32 @@ namespace Crails
     unsigned short port = 80;
     std::string    target;
   };
+
+  struct UrlBuilder
+  {
+    template<typename T, typename... ARGS>
+    static void fragments(std::stringstream& stream, T fragment, ARGS... right)
+    {
+      stream << Url::encode(fragment) << '/';
+      fragments(stream, right...);
+    }
+
+    template<typename T>
+    static void fragments(std::stringstream& stream, T fragment)
+    {
+      stream << Url::encode(fragment);
+    }
+  };
+
+  template<typename... ARGS>
+  std::string uri(ARGS... args)
+  {
+    std::stringstream stream;
+
+    stream << '/';
+    UrlBuilder::fragments(stream, args...);
+    return stream.str();
+  }
 }
 
 #endif
