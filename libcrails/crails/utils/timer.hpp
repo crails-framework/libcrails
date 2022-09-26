@@ -26,6 +26,14 @@ namespace Utils
     struct timeval _lastTime;
 # endif
   };
+
+  class TimeGuard : public Timer
+  {
+    float& out;
+  public:
+    TimeGuard(float& out) : out(out) {}
+    ~TimeGuard() { out += GetElapsedSeconds(); }
+  };
 }
 
 #endif
