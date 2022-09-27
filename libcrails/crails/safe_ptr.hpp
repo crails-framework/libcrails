@@ -2,12 +2,17 @@
 # define CRAILS_SAFE_POINTER_HPP
 
 # include <memory>
-# include <crails/utils/backtrace.hpp>
+# ifndef __COMET_CLIENT__
+#  include <crails/utils/backtrace.hpp>
+#  define NULLPTR_EXCEPTION_BASE boost_ext::exception
+# else
+#  define NULLPTR_EXCEPTION_BASE std::exception
+# endif
 # ifndef safe_ptr_base
 #  define safe_ptr_base std::shared_ptr
 # endif
 
-struct NullPointerException : public boost_ext::exception
+struct NullPointerException : public NULLPTR_EXCEPTION_BASE
 {
 public:
   const char* what() const throw()
