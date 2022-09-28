@@ -41,10 +41,8 @@ namespace Crails
 
     Data            operator[](const std::string& key)       { return (DataTree::operator[](key)); }
     const File*     operator[](const std::string& key) const { return (get_upload(key)); }
-  #ifdef __llvm__
     Data            operator[](const char* key)       { return (DataTree::operator[](std::string(key))); }
     const File*     operator[](const char* key) const { return (get_upload(key)); }
-  #endif
     const File*     get_upload(const std::string& key) const;
 
     Data            get_session(void) { return (session->to_data()); }

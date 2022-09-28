@@ -2,6 +2,7 @@
 #include <crails/logger.hpp>
 #include <memory>
 #include <thread>
+#include <iostream>
 
 using namespace std;
 using namespace boost;
@@ -18,9 +19,15 @@ ProgramOptions::ProgramOptions(int argc, const char** argv)
     ("pidfile",    program_options::value<std::string>(),    "pid file")
     ("log,l",      program_options::value<std::string>(),    "log output")
     ("errors,e",   program_options::value<std::string>(),    "error log output")
+    ("help", "")
     ;
   program_options::store(program_options::parse_command_line(argc, argv, desc), vm);
   program_options::notify(vm);
+  if (vm.count("help"))
+  {
+    cout << desc << endl;
+    exit(0);
+  }
 }
 
 boost::asio::ip::tcp::endpoint ProgramOptions::get_endpoint() const

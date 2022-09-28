@@ -3,6 +3,7 @@
 
 # include <set>
 # include <vector>
+# include <algorithm>
 
 namespace Crails
 {
@@ -36,7 +37,7 @@ namespace Crails
   LIST exclude_nullptr(const LIST& list)
   {                                                                                                                   
     LIST results;
-  
+
     std::copy_if(
       list.begin(),                                                                                                   
       list.end(),
@@ -45,16 +46,6 @@ namespace Crails
     return results;                                                                                                   
   }
 
-  template<typename LIST, typename RETURN_TYPE, typename... ARGS>
-  std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (LIST::value_type::*method)(ARGS...) const noexcept, ARGS... args)
-  {
-    std::vector<RETURN_TYPE> results;
-
-    results.reserve(source.size());
-    for (const auto& item : source)
-      results.push_back((item.*method)(args...));
-    return results;
-  }
   template<typename LIST, typename RETURN_TYPE, typename... ARGS>
   std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (LIST::value_type::*method)(ARGS...) const, ARGS... args)
   {
@@ -66,16 +57,6 @@ namespace Crails
     return results;
   }
 
-  template<typename LIST, typename RETURN_TYPE, typename... ARGS>
-  std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (std::pointer_traits<typename LIST::value_type>::element_type::*method)(ARGS...) const noexcept, ARGS... args)
-  {
-    std::vector<RETURN_TYPE> results;
-
-    results.reserve(source.size());
-    for (const auto& item : exclude_nullptr(source))
-      results.push_back(((*item).*method)(args...));
-    return results;
-  }
   template<typename LIST, typename RETURN_TYPE, typename... ARGS>
   std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (std::pointer_traits<typename LIST::value_type>::element_type::*method)(ARGS...) const, ARGS... args)
   {
