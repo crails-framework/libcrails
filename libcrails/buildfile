@@ -1,5 +1,5 @@
-import intf_libs = libboost-beast%lib{boost_beast}
-import intf_libs += libboost-date-time%lib{boost_date_time}
+import libs += libboost-beast%lib{boost_beast}
+import libs += libboost-date-time%lib{boost_date_time}
 import intf_libs += libboost-program-options%lib{boost_program_options}
 import intf_libs += libbacktrace%lib{backtrace}
 import intf_libs += libdatatree%lib{datatree}
