@@ -15,7 +15,7 @@ namespace Crails
     unsigned short                 get_thread_count() const;
     std::string                    get_pidfile_path() const;
     std::string                    get_log_file() const { return get_value<std::string>("log", ""); }
-    std::string                    get_error_log_file() const { return get_value<std::string>("log", ""); }
+    std::string                    get_error_log_file() const { return get_value<std::string>("errors", ""); }
 
   private:
     template<typename T>

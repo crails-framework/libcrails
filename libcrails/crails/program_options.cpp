@@ -1,5 +1,4 @@
 #include "program_options.hpp"
-#include <crails/logger.hpp>
 #include <memory>
 #include <thread>
 #include <iostream>
