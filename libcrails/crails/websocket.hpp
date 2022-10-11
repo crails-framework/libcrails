@@ -4,7 +4,6 @@
 # include "http.hpp"
 # include <boost/beast/core.hpp>
 # include <boost/beast/websocket.hpp>
-# include <boost/asio/buffer.hpp>
 # include <list>
 # include <mutex>
 
@@ -16,6 +15,7 @@ namespace Crails
   {
   protected:
     WebSocket(Context& connection);
+    virtual ~WebSocket();
   public:
     enum MessageType
     {
@@ -46,6 +46,7 @@ namespace Crails
     std::list<Message> send_buffers;
     bool               reading = false;
     bool               writing = false;
+    bool               closed = false;
     std::mutex         write_mutex;
   };
 }
