@@ -24,13 +24,13 @@ Connection::Connection(const Server& server_, asio::ip::tcp::socket socket_) :
 
   id_stream << socket_description(stream.socket()) << '/' << std::this_thread::get_id() << '/' << ++i;
   connection_id = id_stream.str();
-  logger << Logger::Info << "Crails::Connection opened: " << connection_id << Logger::endl;
+  logger << Logger::Debug << "Crails::Connection opened: " << connection_id << Logger::endl;
   beast::get_lowest_layer(stream).expires_after(std::chrono::seconds(3));
 }
 
 Connection::~Connection()
 {
-  logger << Logger::Info << "Crails::Connection closed: " << connection_id << Logger::endl;
+  logger << Logger::Debug << "Crails::Connection closed: " << connection_id << Logger::endl;
 }
 
 void Connection::start()
@@ -53,6 +53,7 @@ void Connection::expect_read()
 
 void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
 {
+  response.keep_alive(request.keep_alive());
   if (!ec)
     std::make_shared<Context>(server, *this)->run();
   else if (ec != boost::asio::error::eof && ec != boost::asio::error::timed_out)
@@ -69,6 +70,7 @@ void Connection::write()
 
 void Connection::on_write(bool keep_alive, beast::error_code ec, std::size_t)
 {
+  logger << Logger::Debug << "Crails::Connection written on: " << connection_id << ", keep_alive: " << keep_alive << Logger::endl;
   request = {};
   response = {};
   if (!ec && keep_alive)
@@ -81,5 +83,6 @@ void Connection::close()
 {
   beast::error_code ec;
 
+  logger << Logger::Debug << "Crails::Connection close: " << connection_id << Logger::endl;
   stream.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
 }

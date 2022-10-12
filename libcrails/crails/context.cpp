@@ -18,6 +18,7 @@ Context::Context(const Server& server, Connection& connection) :
 Context::~Context()
 {
   logger << Logger::Debug << "Crails::Context destroyed" << Logger::endl;
+  response.send();
 }
 
 void Context::run()

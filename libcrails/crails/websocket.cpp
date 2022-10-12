@@ -97,10 +97,7 @@ void WebSocket::on_read(boost::beast::error_code ec, std::size_t)
     if (ec == boost::beast::websocket::error::closed)
       logger << Logger::Info << "websocket connection closed" << Logger::endl;
     else
-    {
       logger << Logger::Error << "websocket read error: " << ec.message() << Logger::endl;
-      stream.close(boost::beast::websocket::internal_error);
-    }
     disconnected();
   }
 }
@@ -111,7 +108,6 @@ void WebSocket::on_write(boost::beast::error_code ec, std::size_t)
   {
     logger << Logger::Error << "websocket write error: " << ec.message() << Logger::endl;
     closed = true;
-    stream.close(boost::beast::websocket::internal_error);
     disconnected();
   }
   else
