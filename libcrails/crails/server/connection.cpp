@@ -41,10 +41,15 @@ void Connection::start()
   );
 }
 
+void Connection::expires_after(std::chrono::duration<int> duration)
+{
+  stream.expires_after(duration);
+}
+
 void Connection::expect_read()
 {
   request = {};
-  stream.expires_after(std::chrono::seconds(30));
+  expires_after(std::chrono::seconds(30));
   beast::http::async_read(
     stream, buffer, request,
     beast::bind_front_handler(&Connection::read, shared_from_this())

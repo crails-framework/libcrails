@@ -27,6 +27,8 @@ namespace Crails
     boost::beast::tcp_stream& get_stream() { return stream; }
     const std::string& get_connection_id() const { return connection_id; }
 
+    void expires_after(std::chrono::duration<int>);
+
     template<typename CONNECTION>
     std::shared_ptr<CONNECTION> move_to()
     {
