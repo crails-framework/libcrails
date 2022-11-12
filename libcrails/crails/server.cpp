@@ -79,14 +79,20 @@ void Server::launch(int argc, const char **argv)
     boost::asio::io_context& io_context = get_io_context();
     boost::asio::signal_set stop_signals  (io_context, SIGINT, SIGTERM);
     boost::asio::signal_set restart_signal(io_context, SIGUSR2);
+    list<thread> thread_pool;
+
     server.initialize_pid_file(options.get_pidfile_path());
     listener->run();
     initialize_segvcatch(&CrailsServer::throw_crash_segv);
     logger << Logger::Info << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl;
     stop_signals  .async_wait(std::bind(&Server::stop, &server));
     restart_signal.async_wait(std::bind(&Server::restart, &server));
+    for (size_t i = 0 ; i < options.get_thread_count() - 1 ; ++i)
+      thread_pool.emplace_back([&io_context]() { io_context.run(); });
     io_context.run();
     listener->stop();
+    for (thread& t : thread_pool)
+      t.join();
     if (server.marked_for_restart)
       server.do_restart(argc, argv);
   }
