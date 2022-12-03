@@ -21,6 +21,11 @@ Context::~Context()
   response.send();
 }
 
+void Context::protect(std::function<void()> callback)
+{
+  server.exception_catcher.run(*this, callback);
+}
+
 void Context::run()
 {
   logger << Logger::Debug << "Crails::Context: pipeline start" << Logger::endl;
@@ -33,7 +38,7 @@ void Context::run()
 
 void Context::run_parser(Server::RequestParsers::const_iterator it, function<void(bool)> callback)
 {
-  server.exception_catcher.run(*this, [this, it, callback]()
+  protect([this, it, callback]()
   {
     if (it == server.request_parsers.end())
       callback(server.request_parsers.size() > 0);
@@ -77,7 +82,7 @@ void Context::on_parsed(bool parsed)
 
 void Context::run_handler(Server::RequestHandlers::const_iterator it, std::function<void(bool)> callback)
 {
-  server.exception_catcher.run(*this, [this, it, callback]()
+  protect([this, it, callback]()
   {
     if (it == server.request_handlers.end())
       callback(false);

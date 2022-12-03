@@ -7,6 +7,7 @@
 # include "http_response.hpp"
 # include "exception_catcher.hpp"
 # include "utils/timer.hpp"
+# include <mutex>
 
 namespace Crails
 {
@@ -18,9 +19,9 @@ namespace Crails
     friend class ExceptionCatcher;
     friend class Connection;
     friend class Tests::Request;
-    const Server&             server;
     bool                      handled = false;
     ExceptionCatcher::Context exception_context;
+    const Server&             server;
   public:
     Context(const Server& server, Connection& connection);
     ~Context();
@@ -29,6 +30,9 @@ namespace Crails
     BuildingResponse            response;
     Params                      params;
     Utils::Timer                timer;
+    mutable std::mutex          mutex;
+
+    void protect(std::function<void()>);
 
   private:
     void run();

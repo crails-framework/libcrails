@@ -5,6 +5,7 @@
 # include <sstream>
 # include <thread>
 # include <functional>
+# include <mutex>
 
 namespace Crails
 {
@@ -18,13 +19,18 @@ namespace Crails
 
     struct Context
     {
-      Context(Crails::Context& context) : context(&context) {}
-      Context() : context(0) {}
+      Context(Crails::Context&, std::function<void()> callback);
+      Context();
 
       unsigned short        iterator;
       Crails::Context*      context;
       std::thread::id       thread_id;
       std::function<void()> callback;
+    };
+
+    struct MutexLock : public std::lock_guard<std::mutex>
+    {
+      MutexLock(const Crails::Context&);
     };
 
     typedef std::function<void (Context)> Function;
@@ -62,6 +68,7 @@ namespace Crails
         }
         catch (const EXCEPTION e)
         {
+          const MutexLock lock(*exception_context.context);
           handler(*(exception_context.context), e);
         }
       });

@@ -17,20 +17,38 @@ namespace Crails
 ExceptionCatcher::ExceptionCatcher()
 {}
 
+ExceptionCatcher::MutexLock::MutexLock(const Crails::Context& context)
+  : lock_guard<mutex>(context.mutex)
+{
+}
+
+ExceptionCatcher::Context::Context(Crails::Context& context, function<void()> callback) :
+  iterator(0),
+  context(&context),
+  thread_id(std::this_thread::get_id()),
+  callback(callback)
+{
+}
+
+ExceptionCatcher::Context::Context() : context(nullptr), thread_id(std::thread::id())
+{
+}
+
 void ExceptionCatcher::run_protected(Crails::Context& context, std::function<void()> callback) const
 {
-  Context exception_context(context);
+  Context exception_context(context, callback);
 
-  exception_context.iterator  = 0;
-  exception_context.callback  = callback;
-  exception_context.thread_id = std::this_thread::get_id();
-  context.exception_context   = exception_context;
   try
   {
     if (exception_context.iterator < functions.size())
       functions[exception_context.iterator](exception_context);
     else
+    {
+      const MutexLock lock(context);
+
+      context.exception_context = exception_context;
       callback();
+    }
   }
   catch (...)
   {
