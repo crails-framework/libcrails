@@ -11,7 +11,7 @@ using namespace Crails;
 namespace Crails
 {
   void render_exception_view(Context& context, string& exception_name, string& exception_message);
-  void render_error_view(BuildingResponse& out, HttpStatus code, Params& params);
+  void render_error_view(Context& context, HttpStatus code);
 }
 
 ExceptionCatcher::ExceptionCatcher()
@@ -59,7 +59,7 @@ void ExceptionCatcher::response_exception(Crails::Context& context, string e_nam
     logger << "\n" << context.params["backtrace"].as<string>();
   logger << Logger::endl;
   if (Crails::environment == Crails::Production)
-    render_error_view(context.response, HttpStatus::internal_server_error, context.params);
+    render_error_view(context, HttpStatus::internal_server_error);
   else
     render_exception_view(context, e_name, e_what);
   context.on_finished();

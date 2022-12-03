@@ -6,7 +6,7 @@
 using namespace Crails;
 using namespace std;
 
-namespace Crails { void render_error_view(BuildingResponse&, HttpStatus, Params&); }
+namespace Crails { void render_error_view(Context&, HttpStatus); }
 
 Context::Context(const Server& server, Connection& connection) :
   server(server),
@@ -100,7 +100,7 @@ void Context::on_handled(bool handled)
 {
   this->handled = handled;
   if (!handled)
-    render_error_view(response, boost::beast::http::status::not_found, params);
+    render_error_view(*this, boost::beast::http::status::not_found);
   on_finished();
 }
 

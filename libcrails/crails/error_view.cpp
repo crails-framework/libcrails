@@ -9,20 +9,20 @@ using namespace std;
 
 namespace Crails
 {
-  static void render_custom_error_view(string view_name, BuildingResponse& response, HttpStatus code, Params& params)
+  static void render_custom_error_view(string view_name, BuildingResponse& response, HttpStatus code, const std::string& accept)
   {
     response.set_status_code(code);
-    if (Renderer::can_render(view_name, params.as_data()))
+    if (Renderer::has_renderer(view_name, accept))
     {
       SharedVars vars;
       string     content_type;
 
-      Renderer::render(view_name, params.as_data(), response, vars);
+      Renderer::render(view_name, accept, response, vars);
     }
     response.send();
   }
 
-  void render_error_view(BuildingResponse& response, HttpStatus code, Params& params)
+  void render_error_view(Context& context, HttpStatus code)
   {
     FileRequestHandler* file_handler = reinterpret_cast<FileRequestHandler*>(Server::get_request_handler("file"));
     stringstream file_name;
@@ -31,10 +31,16 @@ namespace Crails
     file_name << (unsigned int)(code);
     view_name << "errors/" << file_name.str();
     if (file_handler &&
-        file_handler->send_file("public/" + file_name.str() + ".html", response, code))
+        file_handler->send_file("public/" + file_name.str() + ".html", context.response, code))
       return ;
     else
-      render_custom_error_view(view_name.str(), response, code, params);
+    {
+      const HttpRequest& request = context.connection->get_request();
+      auto accept_header = request.find(HttpHeader::accept);
+      auto accept = accept_header == request.end() ? string() : string(accept_header->value());
+
+      render_custom_error_view(view_name.str(), context.response, code, accept);
+    }
   }
 
   void render_exception_view(Context& context, string& exception_name, string& exception_message)
