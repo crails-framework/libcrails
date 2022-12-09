@@ -66,7 +66,7 @@ boost::asio::io_context& Server::get_io_context()
 
 void Server::launch(int argc, const char **argv)
 {
-  typedef SingletonInstantiator<LogFiles, const ProgramOptions&> LogFilesInstance;
+  typedef SingletonInstantiator<LogFiles> LogFilesInstance;
   logger << Logger::Info << "## Launching the amazing Crails Server ##" << Logger::endl;
   const ProgramOptions     options(argc, argv);
   LogFilesInstance         log_files(options);

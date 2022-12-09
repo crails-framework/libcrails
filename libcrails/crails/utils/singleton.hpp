@@ -9,14 +9,30 @@ public:\
 private:\
   friend class Singleton<type>;
 
-template<typename TYPE, typename... Args>
+# define SINGLETON_IMPLEMENTATION(type, from_type) \
+public:\
+  typedef SingletonImplementation<type, from_type> singleton;\
+private:\
+  friend class SingletonImplementation<type, from_type>;
+
+template<typename TYPE>
 class Singleton
 {
 public:
+  template<typename... Args>
   static void initialize(Args... args)
   {
     if (!(ptr))
       ptr = new TYPE(args...);
+    else
+      throw boost_ext::runtime_error("Was already initialized");
+  }
+
+  template<typename IMPLEMENTATION, typename... Args>
+  static void implement(Args... args)
+  {
+    if (!(ptr))
+      ptr = new IMPLEMENTATION(args...);
     else
       throw boost_ext::runtime_error("Was already initialized");
   }
@@ -36,22 +52,43 @@ private:
   static TYPE* ptr;
 };
 
-template<typename TYPE, typename... Args>
+template<typename TYPE, typename FROM>
+class SingletonImplementation
+{
+public:
+  template<typename... Args>
+  static void initialize(Args... args)
+  {
+    FROM::singleton::template implement<TYPE>(args...);
+  }
+
+  static void finalize(void)
+  {
+    FROM::singleton::finalize();
+  }
+
+  static TYPE* get(void) { return FROM::singleton::get(); }
+};
+
+template<typename TYPE>
 struct SingletonInstantiator
 {
+  template<typename... Args>
   SingletonInstantiator(Args... args)
   {
-    Singleton<TYPE, Args...>::initialize(args...);
+    Singleton<TYPE>::initialize(args...);
   }
+
+  SingletonInstantiator(const SingletonInstantiator&) = delete;
 
   ~SingletonInstantiator()
   {
-    Singleton<TYPE, Args...>::finalize();
+    Singleton<TYPE>::finalize();
   }
 
-  TYPE* operator->() const { return Singleton<TYPE, Args...>::get(); }
+  TYPE* operator->() const { return Singleton<TYPE>::get(); }
 };
 
-template<typename TYPE, typename... Args> TYPE* Singleton<TYPE, Args...>::ptr = 0;
+template<typename TYPE> TYPE* Singleton<TYPE>::ptr = 0;
 
 #endif
