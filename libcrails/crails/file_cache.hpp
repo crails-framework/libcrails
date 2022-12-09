@@ -11,6 +11,14 @@ namespace Crails
   class FileCache : public Flyweight<std::string, std::string>
   {
   public:
+    struct Lock
+    {
+      Lock(FileCache& cache) : self(cache) { self.lock(); }
+      ~Lock() { self.unlock(); }
+    private:
+      FileCache& self;
+    };
+
     void lock(void)
     {
       mutex.lock();

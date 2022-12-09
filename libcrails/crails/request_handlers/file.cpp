@@ -138,35 +138,29 @@ bool FileRequestHandler::process(Context& context) const
 
 bool FileRequestHandler::send_file(const std::string& fullpath, BuildingResponse& response, HttpStatus code, std::pair<unsigned int, unsigned int> range) const
 {
-  file_cache.lock();
+  FileCache::Lock lock(file_cache);
+  bool cached = file_cache.contains(fullpath);
+  auto file   = cache_enabled ? file_cache.require(fullpath) : file_cache.create_instance(fullpath);
+
+  if (file)
   {
-    bool cached = file_cache.contains(fullpath);
-    auto file   = cache_enabled ? file_cache.require(fullpath) : file_cache.create_instance(fullpath);
+    const string& str = *file;
 
-    if (file)
+    if (range.second == 0)
+      range.second = str.size();
+    response.set_header(HttpHeader::content_type, get_mimetype(fullpath));
+    set_headers_for_file(response, fullpath);
+    response.set_status_code(code);
+    response.set_body(str.c_str() + range.first, range.second - range.first);
+    logger << Logger::Info << "# Delivering asset `" << fullpath << "` ";
+    if (cache_enabled)
+      logger << (cached ? "(was cached)" : "(was not cached)") << Logger::endl;
+    else
     {
-      const string& str = *file;
-      std::stringstream str_length;
-
-      if (range.second == 0)
-        range.second = str.size();
-      str_length << (range.second - range.first);
-      response.set_header(HttpHeader::content_type, get_mimetype(fullpath));
-      set_headers_for_file(response, fullpath);
-      response.set_status_code(code);
-      response.set_body(str.c_str() + range.first, range.second - range.first);
-      logger << Logger::Info << "# Delivering asset `" << fullpath << "` ";
-      if (cache_enabled)
-        logger << (cached ? "(was cached)" : "(was not cached)") << Logger::endl;
-      else
-      {
-        file_cache.garbage_collect();
-        logger << "(cache disabled)" << Logger::endl;
-      }
-      file_cache.unlock();
-      return true;
+      file_cache.garbage_collect();
+      logger << "(cache disabled)" << Logger::endl;
     }
+    return true;
   }
-  file_cache.unlock();
   return false;
 }
