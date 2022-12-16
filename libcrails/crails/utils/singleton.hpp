@@ -67,7 +67,7 @@ public:
     FROM::singleton::finalize();
   }
 
-  static TYPE* get(void) { return FROM::singleton::get(); }
+  static TYPE* get(void) { return reinterpret_cast<TYPE*>(FROM::singleton::get()); }
 };
 
 template<typename TYPE>
@@ -76,17 +76,17 @@ struct SingletonInstantiator
   template<typename... Args>
   SingletonInstantiator(Args... args)
   {
-    Singleton<TYPE>::initialize(args...);
+    TYPE::singleton::initialize(args...);
   }
 
   SingletonInstantiator(const SingletonInstantiator&) = delete;
 
   ~SingletonInstantiator()
   {
-    Singleton<TYPE>::finalize();
+    TYPE::singleton::finalize();
   }
 
-  TYPE* operator->() const { return Singleton<TYPE>::get(); }
+  TYPE* operator->() const { return TYPE::singleton::get(); }
 };
 
 template<typename TYPE> TYPE* Singleton<TYPE>::ptr = 0;
