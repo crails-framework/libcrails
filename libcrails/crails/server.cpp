@@ -21,6 +21,8 @@ using namespace Crails;
 Crails::FileCache       Server::file_cache;
 Server::RequestParsers  Server::request_parsers;
 Server::RequestHandlers Server::request_handlers;
+Server::Directories     Server::public_paths;
+std::string             Server::temporary_path;
 
 static string initialize_public_path()
 {
@@ -36,25 +38,20 @@ static string initialize_public_path()
   return filesystem::current_path().string();
 }
 
-const string Server::public_path = initialize_public_path();
-
-Server::Server(unsigned short thread_count)
+Server::Server()
 {
-  logger << ">> Pool Thread Size: " << thread_count << Logger::endl;
+  public_paths.push_back(initialize_public_path());
   initialize_exception_catcher();
-  initialize_request_pipe();
 }
 
 Server::~Server()
 {
-  for_each(request_handlers.begin(), request_handlers.end(), [](RequestHandler* request_handler)
-  {
+  for (RequestHandler* request_handler : request_handlers)
     delete request_handler;
-  });
-  for_each(request_parsers.begin(), request_parsers.end(), [](RequestParser* request_parser)
-  {
+  for (RequestParser* request_parser : request_parsers)
     delete request_parser;
-  });
+  request_handlers.clear();
+  request_parsers.clear();
 }
 
 boost::asio::io_context& Server::get_io_context()
@@ -70,8 +67,7 @@ void Server::launch(int argc, const char **argv)
   logger << Logger::Info << "## Launching the amazing Crails Server ##" << Logger::endl;
   const ProgramOptions     options(argc, argv);
   LogFilesInstance         log_files(options);
-  Server                   server(options.get_thread_count());
-  auto                     listener = make_shared<Listener>(server);
+  auto                     listener = make_shared<Listener>(*this);
   boost::beast::error_code error;
 
   if (listener->listen(options.get_endpoint(), error))
@@ -81,20 +77,22 @@ void Server::launch(int argc, const char **argv)
     boost::asio::signal_set restart_signal(io_context, SIGUSR2);
     list<thread> thread_pool;
 
-    server.initialize_pid_file(options.get_pidfile_path());
+    initialize_pid_file(options.get_pidfile_path());
     listener->run();
     initialize_segvcatch(&CrailsServer::throw_crash_segv);
-    logger << Logger::Info << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl;
-    stop_signals  .async_wait(std::bind(&Server::stop, &server));
-    restart_signal.async_wait(std::bind(&Server::restart, &server));
+    logger << Logger::Info
+      << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl
+      << ">> Pool Thread Size: " << options.get_thread_count() << Logger::endl;
+    stop_signals  .async_wait(std::bind(&Server::stop, this));
+    restart_signal.async_wait(std::bind(&Server::restart, this));
     for (size_t i = 0 ; i < options.get_thread_count() - 1 ; ++i)
       thread_pool.emplace_back([&io_context]() { io_context.run(); });
     io_context.run();
     listener->stop();
     for (thread& t : thread_pool)
       t.join();
-    if (server.marked_for_restart)
-      server.do_restart(argc, argv);
+    if (marked_for_restart)
+      do_restart(argc, argv);
   }
   else
     logger << Logger::Error << "!! Could not listen on endpoint: " << error.message() << Logger::endl;
@@ -124,7 +122,7 @@ void Server::initialize_pid_file(const string& filepath) const
   {
     pid_t pid = getpid();
 
-    logger << ">> PID " << pid << " (stored in " << filepath << ')' << Logger::endl;
+    logger << Logger::Info << ">> PID " << pid << " (stored in " << filepath << ')' << Logger::endl;
     output << pid;
     output.close();
   }

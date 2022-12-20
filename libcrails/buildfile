@@ -3,6 +3,7 @@ import libs += libboost-date-time%lib{boost_date_time}
 import intf_libs += libboost-program-options%lib{boost_program_options}
 import intf_libs += libbacktrace%lib{backtrace}
 import intf_libs += libdatatree%lib{datatree}
+import intf_libs += libcrails-design-patterns%lib{crails-design-patterns}
 import intf_libs += libcrails-logger%lib{crails-logger}
 import intf_libs += libcrails-semantics%lib{crails-semantics}
 import intf_libs += libcrails-readfile%lib{crails-readfile}

@@ -23,9 +23,14 @@ static string filepath_from_uri(string uri)
 
   if (separator != std::string::npos)
     uri.erase(separator);
-  result = filesystem::canonical(Server::public_path + uri, ec);
-  if (!ec)
-    return result.string();
+
+  for (const string& public_path : Server::get_public_paths())
+  {
+    auto canonical_path = filesystem::canonical(public_path + uri, ec);
+
+    if (!ec && canonical_path > public_path)
+      return canonical_path.string();
+  }
   return "";
 }
 
@@ -112,8 +117,6 @@ bool FileRequestHandler::process(Context& context) const
 
   if (fullpath.length() == 0)
     context.response.set_status_code(HttpStatus::not_found);
-  else if (fullpath.find(Server::public_path) == string::npos)
-    context.response.set_status_code(HttpStatus::bad_request);
   else
   {
     Range      range{0,0};

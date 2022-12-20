@@ -4,6 +4,7 @@
 # include "http.hpp"
 # include "file_cache.hpp"
 # include "exception_catcher.hpp"
+# include <crails/utils/singleton.hpp>
 # include <crails/datatree.hpp>
 
 namespace Crails
@@ -16,17 +17,15 @@ namespace Crails
 
   class Server
   {
+    SINGLETON(Server)
     friend class Context;
-  public:
-    static const std::string temporary_path;
-    static const std::string public_path;
-
-    Server(unsigned short thread_count = 1);
+  protected:
+    Server();
     ~Server();
-
-    typedef HttpStatus                   HttpCodes; // Deprecated
+  public:
     typedef std::vector<RequestParser*>  RequestParsers;
     typedef std::vector<RequestHandler*> RequestHandlers;
+    typedef std::vector<std::string>     Directories;
 
     struct Crash : public boost_ext::exception
     {
@@ -35,30 +34,35 @@ namespace Crails
       std::string details;
     };
 
-    static void launch(int argc, const char** argv);
-    void        stop();
-    void        restart();
+    void launch(int argc, const char** argv);
+    void stop();
+    void restart();
 
-    static RequestHandler*          get_request_handler(const std::string& name);
+    static const RequestHandler*    get_request_handler(const std::string& name);
     static FileCache&               get_file_cache() { return file_cache; }
+    static const Directories&       get_public_paths() { return public_paths; }
+    static const std::string&       get_temporary_path() { return temporary_path; }
     static boost::asio::io_context& get_io_context();
+
+  protected:
+    void add_request_handler(RequestHandler* request_handler);
+    void add_request_parser(RequestParser* request_parser);
+
+    static Directories public_paths;
+    static std::string temporary_path;
 
   private:
     static void throw_crash_segv();
 
     void initialize_exception_catcher();
     void initialize_pid_file(const std::string&) const;
-    void initialize_request_pipe();
-    void add_request_handler(RequestHandler* request_handler);
-    void add_request_parser(RequestParser* request_parser);
-    void on_interrupted(const boost::system::error_code&, int);
     void do_restart(int argc, const char** argv);
 
-    static RequestParsers    request_parsers;
-    static RequestHandlers   request_handlers;
-    static FileCache         file_cache;
-    ExceptionCatcher         exception_catcher;
-    bool                     marked_for_restart = false;
+    static RequestParsers  request_parsers;
+    static RequestHandlers request_handlers;
+    static FileCache       file_cache;
+    ExceptionCatcher       exception_catcher;
+    bool                   marked_for_restart = false;
   };
 }
 
