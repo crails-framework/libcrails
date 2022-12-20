@@ -24,7 +24,7 @@ namespace Crails
 
   void render_error_view(Context& context, HttpStatus code)
   {
-    FileRequestHandler* file_handler = reinterpret_cast<FileRequestHandler*>(Server::get_request_handler("file"));
+    const FileRequestHandler* file_handler = reinterpret_cast<const FileRequestHandler*>(Server::get_request_handler("file"));
     stringstream file_name;
     stringstream view_name;
 

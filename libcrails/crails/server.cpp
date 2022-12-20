@@ -147,10 +147,10 @@ void Server::add_request_parser(RequestParser* request_parser)
   request_parsers.push_back(request_parser);
 }
 
-RequestHandler* Server::get_request_handler(const string& name)
+const RequestHandler* Server::get_request_handler(const string& name)
 {
   auto compare = [name](const RequestHandler* handler) { return handler->get_name() == name; };
-  auto it = std::find_if(request_handlers.cbegin(), request_handlers.cend(), compare);
+  auto it = find_if(request_handlers.cbegin(), request_handlers.cend(), compare);
 
   return it != request_handlers.cend() ? *it : nullptr;
 }
