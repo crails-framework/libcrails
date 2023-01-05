@@ -9,7 +9,7 @@
   public: \
   class Factory : public SessionStore::Factory \
   { \
-    SINGLETON_IMPLEMENTATION(classname, SessionStore::Factory) \
+    SINGLETON_IMPLEMENTATION(classname::Factory, SessionStore::Factory) \
     std::unique_ptr<SessionStore> make() override { return std::make_unique<classname>(); } \
   }; \
   private:
