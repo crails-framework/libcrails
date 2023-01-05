@@ -7,7 +7,7 @@ using namespace Crails;
 
 Params::Params(void)
 {
-  session = SessionStore::Factory();
+  session = SessionStore::Factory::create();
 }
 
 Params::~Params(void)

@@ -3,12 +3,16 @@
 
 # include "http.hpp"
 # include <crails/datatree.hpp>
+# include <crails/utils/singleton.hpp>
 
-# define USE_SESSION_STORE(classname) \
-std::unique_ptr<Crails::SessionStore> Crails::SessionStore::Factory(void) \
-{ \
-  return (std::unique_ptr<Crails::SessionStore>(new classname ())); \
-}
+# define SESSION_STORE_IMPLEMENTATION(classname) \
+  public: \
+  class Factory : public SessionStore::Factory \
+  { \
+    SINGLETON_IMPLEMENTATION(classname, SessionStore::Factory) \
+    std::unique_ptr<SessionStore> make() override { return std::make_unique<classname>(); } \
+  }; \
+  private:
 
 namespace Crails
 {
@@ -18,11 +22,23 @@ namespace Crails
   {
   public:
     virtual ~SessionStore() {}
-    static std::unique_ptr<SessionStore> Factory(void);
 
-    virtual void load(const HttpRequest&)    = 0;
+    virtual void load(const HttpRequest&) = 0;
     virtual void finalize(BuildingResponse&) = 0;
-    virtual Data to_data(void)               = 0;
+    virtual Data to_data(void) = 0;
+    virtual const Data to_data(void) const = 0;
+
+    class Factory
+    {
+      SINGLETON(Factory)
+    public:
+      static std::unique_ptr<SessionStore> create()
+      {
+        return Factory::singleton::require().make();
+      }
+    protected:
+      virtual std::unique_ptr<SessionStore> make();
+    };
   };
 }
 
