@@ -10,13 +10,35 @@ namespace Crails
   std::string any_cast(const boost::any& val);
 
   template<typename V>
+  struct AnyCaster
+  {
+    static V defaults_to(const std::map<std::string, boost::any>& a, const std::string& k, const V def)
+    {
+      typename std::map<std::string, boost::any>::const_iterator it = a.find(k);
+
+      if (it == a.end())
+        return def;
+      return boost::any_cast<V>(it->second);
+    }
+  };
+
+  template<>
+  struct AnyCaster<std::string>
+  {
+    static std::string defaults_to(const std::map<std::string, boost::any>& a, const std::string& k, const std::string& def)
+    {
+      typename std::map<std::string, boost::any>::const_iterator it = a.find(k);
+
+      if (it == a.end())
+        return def;
+      return Crails::any_cast(it->second);
+    }
+  };
+
+  template<typename V>
   static V defaults_to(const std::map<std::string, boost::any>& a, const std::string& k, const V def)
   {
-    typename std::map<std::string, boost::any>::const_iterator it = a.find(k);
-
-    if (it == a.end())
-      return def;
-    return boost::any_cast<V>(it->second);
+    return AnyCaster<V>::defaults_to(a, k, def);
   }
 }
 
