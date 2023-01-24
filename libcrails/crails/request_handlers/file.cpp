@@ -28,7 +28,7 @@ static string filepath_from_uri(string uri)
   {
     auto canonical_path = filesystem::canonical(public_path + uri, ec);
 
-    if (!ec && canonical_path > public_path)
+    if (!ec && canonical_path >= public_path)
       return canonical_path.string();
   }
   return "";
