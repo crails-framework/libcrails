@@ -5,9 +5,8 @@ namespace Crails
 {
   std::string any_cast(const boost::any& val)
   {
-    try {
+    if (typeid(const char*) == val.type())
       return std::string(boost::any_cast<const char*>(val));
-    } catch (...) {}
     return boost::any_cast<std::string>(val);
   }
 }
