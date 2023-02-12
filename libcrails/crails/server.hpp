@@ -50,6 +50,7 @@ namespace Crails
 
     static Directories public_paths;
     static std::string temporary_path;
+    ExceptionCatcher   exception_catcher;
 
   private:
     static void throw_crash_segv();
@@ -61,7 +62,6 @@ namespace Crails
     static RequestParsers  request_parsers;
     static RequestHandlers request_handlers;
     static FileCache       file_cache;
-    ExceptionCatcher       exception_catcher;
     bool                   marked_for_restart = false;
   };
 }
