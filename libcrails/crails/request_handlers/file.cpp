@@ -54,16 +54,28 @@ static void serve_compressed_file_if_possible(string& fullpath, BuildingResponse
   }
 }
 
+static std::string make_header_string(boost::beast::string_view header)
+{
+  string header_string(header);
+  auto pos = header_string.rfind("\r\n");
+
+  if (pos != std::string::npos)
+    return header_string.substr(0, pos);
+  return header_string;
+}
+
 static std::pair<unsigned int, unsigned int> range_from_header(boost::beast::string_view header)
 {
-  auto parts = split(string(header), '=');
+  auto parts = split(make_header_string(header), '=');
   pair<unsigned int, unsigned int> range{0,0};
 
   if (parts.size() == 2)
   {
     parts = split(*parts.rbegin(), '-');
-    range.first  = boost::lexical_cast<unsigned int>(*parts.begin());
-    range.second = boost::lexical_cast<unsigned int>(*parts.rbegin());
+    if (parts.begin()->length() > 0)
+      range.first  = boost::lexical_cast<unsigned int>(*parts.begin());
+    if (parts.rbegin()->length() > 0)
+      range.second = boost::lexical_cast<unsigned int>(*parts.rbegin());
   }
   return range;
 }
