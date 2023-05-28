@@ -27,10 +27,12 @@ std::string get_mimetype(const std::string& filename)
     ExtensionMatch("(jpg|jpeg)",           "image/jpg"),
     ExtensionMatch("bmp",                  "image/bmp"),
     ExtensionMatch("svg",                  "image/svg+xml"),
-    ExtensionMatch("txt",                  "text/txt")
+    ExtensionMatch("txt",                  "text/txt"),
+    ExtensionMatch("ogg",                  "audio/ogg"),
+    ExtensionMatch("mp3",                  "audio/mpeg")
   };
 
-  for (unsigned short i = 0 ; i < 8 ; ++i)
+  for (unsigned short i = 0 ; i < 10 ; ++i)
   {
     if (regex_search(filename, extensions[i].regexp))
       return (extensions[i].mime);
