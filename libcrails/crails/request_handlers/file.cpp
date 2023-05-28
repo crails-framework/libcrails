@@ -59,8 +59,11 @@ static std::string make_header_string(boost::beast::string_view header)
   string header_string(header);
   auto pos = header_string.rfind("\r\n");
 
-  if (pos != std::string::npos)
-    return header_string.substr(0, pos);
+  while (pos != std::string::npos)
+  {
+    header_string = header_string.substr(0, pos);
+    pos = header_string.rfind("\r\n");
+  }
   return header_string;
 }
 
@@ -71,13 +74,35 @@ static std::pair<unsigned int, unsigned int> range_from_header(boost::beast::str
 
   if (parts.size() == 2)
   {
-    parts = split(*parts.rbegin(), '-');
-    if (parts.begin()->length() > 0)
+    string range_part = *parts.rbegin();
+
+    parts = split(range_part, '-');
+    if (parts.begin()->length() > 0 && range_part[0] != '-')
       range.first  = boost::lexical_cast<unsigned int>(*parts.begin());
-    if (parts.rbegin()->length() > 0)
+    if (parts.rbegin()->length() > 0 && (*range_part.rbegin()) != '-')
       range.second = boost::lexical_cast<unsigned int>(*parts.rbegin());
   }
   return range;
+}
+
+static std::string get_content_range(pair<unsigned int, unsigned int> range, size_t length)
+{
+  std::stringstream result;
+
+  result << "bytes ";
+  if (range.first + range.second == 0)
+    result << "0-" << (length - 1);
+  else
+  {
+    if (range.first > 0) result << range.first;
+    result << '-';
+    if (range.second > 0)
+      result << range.second;
+    else
+      result << range.first + (length - range.first) - 1;
+  }
+  result << '/' << length;
+  return result.str();
 }
 
 static std::time_t http_date_to_timestamp(boost::beast::string_view str)
@@ -123,9 +148,10 @@ void FileRequestHandler::operator()(Context& context, function<void(bool)> callb
 
 bool FileRequestHandler::process(Context& context) const
 {
-  const HttpRequest& request = context.connection->get_request();
-  const string       uri(request.target());
-  string             fullpath = filepath_from_uri(uri);
+  const auto&  request = context.connection->get_request();
+  const string uri(request.target());
+  string       fullpath = filepath_from_uri(uri);
+  auto         success_status = HttpStatus::ok;
 
   if (fullpath.length() == 0)
     context.response.set_status_code(HttpStatus::not_found);
@@ -139,13 +165,16 @@ bool FileRequestHandler::process(Context& context) const
       fullpath += "/index.html";
     serve_compressed_file_if_possible(fullpath, context.response, request);
     if (range_field != request.end())
+    {
       range = range_from_header(range_field->value().data());
+      success_status = HttpStatus::partial_content;
+    }
     if (update_field != request.end() && if_not_modified(update_field->value(), context.response, fullpath))
     {
       context.response.set_status_code(HttpStatus::not_modified);
       return true;
     }
-    else if (send_file(fullpath, context.response, HttpStatus::ok, range))
+    else if (send_file(fullpath, context.response, success_status, range))
       return true;
   }
   return false;
@@ -161,11 +190,16 @@ bool FileRequestHandler::send_file(const std::string& fullpath, BuildingResponse
   {
     const string& str = *file;
 
-    if (range.second == 0)
-      range.second = str.size();
     response.set_header(HttpHeader::content_type, get_mimetype(fullpath));
+    if (code == HttpStatus::partial_content)
+    {
+      response.set_header(HttpHeader::accept_ranges, "bytes");
+      response.set_header(HttpHeader::content_range, get_content_range(range, str.length()));
+    }
     set_headers_for_file(response, fullpath);
     response.set_status_code(code);
+    if (range.second == 0)
+      range.second = str.size();
     response.set_body(str.c_str() + range.first, range.second - range.first);
     logger << Logger::Info << "# Delivering asset `" << fullpath << "` ";
     if (cache_enabled)
