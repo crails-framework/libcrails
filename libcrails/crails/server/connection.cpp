@@ -1,7 +1,8 @@
 #include <boost/asio/dispatch.hpp>
 #include <sstream>
-#include "connection.hpp"
+#include <limits>
 #include <crails/logger.hpp>
+#include "connection.hpp"
 #include "../context.hpp"
 
 using namespace Crails;
@@ -48,21 +49,69 @@ void Connection::expires_after(std::chrono::duration<int> duration)
 
 void Connection::expect_read()
 {
+  parser.emplace();
+  parser->body_limit(std::numeric_limits<unsigned int>::max()); // TODO make this customizable
   request = {};
   expires_after(std::chrono::seconds(30));
-  beast::http::async_read(
-    stream, buffer, request,
+  boost::beast::http::async_read_header(
+    stream, buffer, *parser,
+    beast::bind_front_handler(&Connection::read_header, shared_from_this())
+  );
+}
+
+void Connection::expect_body()
+{
+  parser->get().body().data = body_buffer;
+  parser->get().body().size = sizeof(body_buffer);
+  boost::beast::http::async_read(
+    stream, buffer, *parser,
     beast::bind_front_handler(&Connection::read, shared_from_this())
   );
 }
 
+void Connection::read_header(boost::beast::error_code ec, std::size_t bytes_transferred)
+{
+  if (!ec)
+  {
+    auto content_length = parser->content_length();
+
+    response.keep_alive(parser->keep_alive());
+    request = parser->get();
+    body_chunk_callback = std::function<void(std::string_view)>();
+    std::make_shared<Context>(server, *this)->run();
+    if (content_length && *content_length > 0)
+      expect_body();
+  }
+  else
+    on_read_error(ec);
+}
+
 void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
 {
-  response.keep_alive(request.keep_alive());
-  if (!ec)
-    std::make_shared<Context>(server, *this)->run();
-  else if (ec != boost::asio::error::eof && ec != boost::asio::error::timed_out)
+  if (!ec || ec == beast::http::error::need_buffer)
+  {
+    auto remaining = parser->content_length_remaining();
+    std::string_view chunk(body_buffer, bytes_transferred);
+
+    if (body_chunk_callback && chunk.length() > 0)
+      body_chunk_callback(chunk);
+    if (remaining && *remaining > 0)
+      expect_body();
+  }
+  else
+    on_read_error(ec);
+}
+
+void Connection::on_read_error(boost::beast::error_code ec)
+{
+  if (ec != boost::asio::error::eof && ec != boost::asio::error::timed_out)
     logger << Logger::Debug << "!! Crails failed to read on socket: " << ec.message() << Logger::endl;
+  else if (ec == boost::asio::error::eof)
+    logger << Logger::Debug << connection_id << " EOF received" << Logger::endl;
+  else if (ec == boost::asio::error::timed_out)
+    logger << Logger::Debug << connection_id << " Connection timed out" << Logger::endl;
+  else
+    logger << Logger::Debug << connection_id << " Unexpected error type received" << Logger::endl;
 }
 
 void Connection::write()

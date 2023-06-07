@@ -46,6 +46,8 @@ namespace Crails
       unsigned int          total_read;
       unsigned int          to_read;
       std::function<void()> finished_callback;
+
+      void on_received_chunk(std::string_view);
     };
   };
 }

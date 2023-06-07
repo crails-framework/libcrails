@@ -24,7 +24,7 @@ BuiltinAssetsHandler::BuiltinAssetsHandler(const BuiltinAssets& library)
 
 void BuiltinAssetsHandler::operator()(Context& context, function<void(bool)> callback) const
 {
-  const HttpRequest& request = context.connection->get_request();
+  const auto& request = context.connection->get_request();
   bool handled = false;
 
   if (request.method() == HttpVerb::get && library.accepts(request))

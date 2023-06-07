@@ -4,6 +4,7 @@
 # include "../http.hpp"
 # include <boost/asio/ip/tcp.hpp>
 # include <boost/beast/core.hpp>
+# include <optional>
 
 namespace Crails
 {
@@ -13,6 +14,7 @@ namespace Crails
   {
   public:
     typedef std::function<void(Connection&)> RequestHandler;
+    typedef boost::beast::http::request_parser<boost::beast::http::buffer_body> HttpParser;
 
     Connection(const Server&, boost::asio::ip::tcp::socket);
     Connection(const Server&, HttpRequest); // Only needed for test purposes
@@ -22,12 +24,14 @@ namespace Crails
     void write();
     void close();
 
+    HttpParser&        get_parser() { return *parser; }
     const HttpRequest& get_request() const { return request; }
     HttpResponse&      get_response() { return response; }
     boost::beast::tcp_stream& get_stream() { return stream; }
     const std::string& get_connection_id() const { return connection_id; }
 
     void expires_after(std::chrono::duration<int>);
+    void on_received_body_chunk(std::function<void(std::string_view)> callback) { body_chunk_callback = callback; }
 
     template<typename CONNECTION>
     std::shared_ptr<CONNECTION> move_to()
@@ -38,15 +42,23 @@ namespace Crails
 
   private:
     void expect_read();
+    void expect_body();
     void read(boost::beast::error_code ec, std::size_t bytes_transferred);
+    void read_header(boost::beast::error_code ec, std::size_t bytes_transferred);
     void on_write(bool keep_alive, boost::beast::error_code ec, std::size_t);
+    void on_read_error(boost::beast::error_code);
 
     const Server&             server;
     boost::beast::tcp_stream  stream;
     boost::beast::flat_buffer buffer{8192};
+
     HttpRequest               request{};
     HttpResponse              response{};
     std::string               connection_id;
+    std::optional<HttpParser> parser;
+    char                      body_buffer[8192];
+
+    std::function<void(std::string_view)> body_chunk_callback;
   };
 }
 
