@@ -74,9 +74,9 @@ namespace Crails
       });
     }
 
+    void default_exception_handler(Crails::Context&, const std::string& exception_name, const std::string& message, const std::string& trace);
   private:
     void response_exception(Crails::Context&, std::string exception_name, std::string message) const;
-    void default_exception_handler(Crails::Context&, const std::string& exception_name, const std::string& message, const std::string& trace);
 
     Functions     functions;
   };
