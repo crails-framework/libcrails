@@ -31,7 +31,11 @@ namespace Crails
     const std::string& get_connection_id() const { return connection_id; }
 
     void expires_after(std::chrono::duration<int>);
+
     void on_received_body_chunk(std::function<void(std::string_view)> callback) { body_chunk_callback = callback; }
+
+    std::size_t get_content_length_remaining() const;
+    void get_body(std::function<void (std::string_view)>);
 
     template<typename CONNECTION>
     std::shared_ptr<CONNECTION> move_to()
@@ -57,8 +61,10 @@ namespace Crails
     std::string               connection_id;
     std::optional<HttpParser> parser;
     char                      body_buffer[8192];
+    unsigned int              max_body_size = 5242880;
 
     std::function<void(std::string_view)> body_chunk_callback;
+    std::string body;
   };
 }
 

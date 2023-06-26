@@ -77,8 +77,8 @@ void Connection::read_header(boost::beast::error_code ec, std::size_t bytes_tran
 
     response.keep_alive(parser->keep_alive());
     request = parser->get();
-    body_chunk_callback = std::function<void(std::string_view)>();
     std::make_shared<Context>(server, *this)->run();
+    body = std::string();
     if (content_length && *content_length > 0)
       expect_body();
   }
@@ -90,13 +90,18 @@ void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
 {
   if (!ec || ec == beast::http::error::need_buffer)
   {
-    auto remaining = parser->content_length_remaining();
     std::string_view chunk(body_buffer, bytes_transferred);
 
     if (body_chunk_callback && chunk.length() > 0)
+    {
+      if (body.length() + chunk.length() <= max_body_size)
+        body += chunk;
       body_chunk_callback(chunk);
-    if (remaining && *remaining > 0)
+    }
+    if (get_content_length_remaining() > 0)
       expect_body();
+    else
+      body_chunk_callback = std::function<void(std::string_view)>();
   }
   else
     on_read_error(ec);
@@ -139,4 +144,29 @@ void Connection::close()
 
   logger << Logger::Debug << "Crails::Connection close: " << connection_id << Logger::endl;
   stream.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
+}
+
+std::size_t Connection::get_content_length_remaining() const
+{
+  auto remaining = parser->content_length_remaining();
+
+  return remaining ? *remaining : 0;
+}
+
+void Connection::get_body(std::function<void (std::string_view)> callback)
+{
+  auto chunk_callback = body_chunk_callback;
+
+  if (get_content_length_remaining() == 0)
+    callback(body);
+  else
+  {
+    body_chunk_callback = [this, chunk_callback, callback](std::string_view chunk)
+    {
+      if (chunk_callback)
+        chunk_callback(chunk);
+      if (get_content_length_remaining() == 0)
+        callback(body);
+    };
+  }
 }
