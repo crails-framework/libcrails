@@ -51,6 +51,7 @@ void Connection::expect_read()
 {
   parser.emplace();
   parser->body_limit(std::numeric_limits<unsigned int>::max()); // TODO make this customizable
+  reset_body_chunk_callback();
   request = {};
   expires_after(std::chrono::seconds(30));
   boost::beast::http::async_read_header(
@@ -81,6 +82,8 @@ void Connection::read_header(boost::beast::error_code ec, std::size_t bytes_tran
     body = std::string();
     if (content_length && *content_length > 0)
       expect_body();
+    else
+      reset_body_chunk_callback();
   }
   else
     on_read_error(ec);
@@ -100,8 +103,11 @@ void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
     }
     if (get_content_length_remaining() > 0)
       expect_body();
-    else
-      body_chunk_callback = std::function<void(std::string_view)>();
+    else if (body_chunk_callback)
+    {
+      body_chunk_callback(std::string_view());
+      reset_body_chunk_callback();
+    }
   }
   else
     on_read_error(ec);
@@ -148,16 +154,20 @@ void Connection::close()
 
 std::size_t Connection::get_content_length_remaining() const
 {
-  auto remaining = parser->content_length_remaining();
+  if (parser && parser->is_header_done())
+  {
+    auto remaining = parser->content_length_remaining();
 
-  return remaining ? *remaining : 0;
+    return remaining ? *remaining : 0;
+  }
+  return 0;
 }
 
 void Connection::get_body(std::function<void (std::string_view)> callback)
 {
   auto chunk_callback = body_chunk_callback;
 
-  if (get_content_length_remaining() == 0)
+  if (parser && parser->is_header_done() && get_content_length_remaining() == 0)
     callback(body);
   else
   {

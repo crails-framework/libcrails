@@ -51,6 +51,7 @@ namespace Crails
     void read_header(boost::beast::error_code ec, std::size_t bytes_transferred);
     void on_write(bool keep_alive, boost::beast::error_code ec, std::size_t);
     void on_read_error(boost::beast::error_code);
+    void reset_body_chunk_callback() { body_chunk_callback = std::function<void(std::string_view)>(); }
 
     const Server&             server;
     boost::beast::tcp_stream  stream;
