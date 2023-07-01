@@ -22,7 +22,7 @@ void BodyParser::PendingBody::on_received_chunk(string_view chunk)
 
   read_buffer += chunk;
   total_read += chunk.length();
-  if (total_read >= to_read)
+  if (total_read >= to_read && finished_callback)
     finished_callback();
 }
 
@@ -40,6 +40,7 @@ void BodyParser::wait_for_body(Context& context, function<void()> finished_callb
     callback();
   else
   {
+    pending_body->finished_callback = callback;
     context.connection->on_received_body_chunk(
       std::bind(
         &BodyParser::PendingBody::on_received_chunk,
@@ -47,6 +48,5 @@ void BodyParser::wait_for_body(Context& context, function<void()> finished_callb
         std::placeholders::_1
       )
     );
-    pending_body->finished_callback = callback;
   }
 }
