@@ -46,26 +46,49 @@ namespace Crails
     return results;                                                                                                   
   }
 
-  template<typename LIST, typename RETURN_TYPE, typename... ARGS>
-  std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (LIST::value_type::*method)(ARGS...) const, ARGS... args)
+  template<typename LIST, bool IS_POINTER, typename ...ARGS>
+  class ArrayCollector
   {
-    std::vector<RETURN_TYPE> results;
+    ArrayCollector() = delete;
+  public:
+    template<typename RETURN_TYPE, typename METHOD_SCOPE>
+    static std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (METHOD_SCOPE::*method)(ARGS...) const, ARGS... args)
+    {
+      std::vector<RETURN_TYPE> results;
+    
+      results.reserve(source.size());
+      for (const auto& item : source)
+        results.push_back((item.*method)(args...));
+      return results;
+    }
+  };
 
-    results.reserve(source.size());
-    for (const auto& item : source)
-      results.push_back((item.*method)(args...));
-    return results;
-  }
-
-  template<typename LIST, typename RETURN_TYPE, typename... ARGS>
-  std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (std::pointer_traits<typename LIST::value_type>::element_type::*method)(ARGS...) const, ARGS... args)
+  template<typename LIST, typename ...ARGS>
+  class ArrayCollector<LIST, true, ARGS...>
   {
-    std::vector<RETURN_TYPE> results;
+    ArrayCollector() = delete;
+  public:
+    template<typename RETURN_TYPE, typename METHOD_SCOPE>
+    static std::vector<RETURN_TYPE> collect(const LIST& source, RETURN_TYPE (METHOD_SCOPE::*method)(ARGS...) const, ARGS... args)
+    {
+      std::vector<RETURN_TYPE> results;
+      LIST list_without_nullptrs = exclude_nullptr(source);
+    
+      results.reserve(list_without_nullptrs.size());
+      for (const auto& item : list_without_nullptrs)
+        results.push_back(((*item).*method)(args...));
+      return results;
+    }
+  };
 
-    results.reserve(source.size());
-    for (const auto& item : exclude_nullptr(source))
-      results.push_back(((*item).*method)(args...));
-    return results;
+  template<typename LIST, typename METHOD, typename ...ARGS>
+  auto collect(const LIST& source, METHOD method, ARGS... args)
+  {
+      return ArrayCollector<
+        LIST,
+        std::is_pointer<typename LIST::value_type>::value || is_specialization<typename LIST::value_type, std::shared_ptr>::value,
+        ARGS...
+      >::collect(source, method, args...);
   }
 }
 
