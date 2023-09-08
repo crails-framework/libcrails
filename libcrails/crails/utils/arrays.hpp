@@ -4,6 +4,8 @@
 # include <set>
 # include <vector>
 # include <algorithm>
+# include <memory>
+# include "type_traits.hpp"
 
 namespace Crails
 {
