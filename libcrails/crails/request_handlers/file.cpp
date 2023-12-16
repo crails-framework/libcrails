@@ -30,6 +30,8 @@ static string filepath_from_uri(string uri)
 
     if (!ec && canonical_path >= public_path)
       return canonical_path.string();
+    else
+      logger << Logger::Info << "# Attempting to read unauthorized path '" << canonical_path.string() << Logger::endl;
   }
   return "";
 }
