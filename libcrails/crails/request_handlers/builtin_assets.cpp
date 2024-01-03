@@ -6,10 +6,14 @@ using namespace std;
 
 bool BuiltinAssets::accepts(const HttpRequest& request) const
 {
-  const auto accepted = request.find(HttpHeader::accept_encoding);
+  if (compression_strategy.length() > 0)
+  {
+    const auto accepted = request.find(HttpHeader::accept_encoding);
 
-  return accepted != request.end() &&
-         accepted->value().find(compression_strategy.data()) != string::npos;
+    return accepted != request.end() &&
+           accepted->value().find(compression_strategy.data()) != string::npos;
+  }
+  return true;
 }
 
 void BuiltinAssets::add(const string_view name, const char* data, size_t length)
