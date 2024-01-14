@@ -10,7 +10,7 @@ using namespace Crails;
 
 LogFiles::LogFiles(int argc, const char** argv)
 {
-  ProgramOptions options(argc, argv);
+  ProgramOptions options(argc, argv, ProgramOptions::AllowUnregistered);
 
   load_from_program_options(options);
 }
