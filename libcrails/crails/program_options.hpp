@@ -9,7 +9,12 @@ namespace Crails
   class ProgramOptions
   {
   public:
-    ProgramOptions(int argc, const char** argv);
+    enum Options
+    {
+      AllowUnregistered = 1
+    };
+
+    ProgramOptions(int argc, const char** argv, int options = 0);
 
     boost::asio::ip::tcp::endpoint get_endpoint() const;
     unsigned short                 get_thread_count() const;

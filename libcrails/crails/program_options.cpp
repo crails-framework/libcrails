@@ -7,7 +7,7 @@ using namespace std;
 using namespace boost;
 using namespace Crails;
 
-ProgramOptions::ProgramOptions(int argc, const char** argv)
+ProgramOptions::ProgramOptions(int argc, const char** argv, int options)
 {
   program_options::options_description desc("Options");
 
@@ -20,7 +20,10 @@ ProgramOptions::ProgramOptions(int argc, const char** argv)
     ("errors,e",   program_options::value<std::string>(),    "error log output")
     ("help", "")
     ;
-  program_options::store(program_options::parse_command_line(argc, argv, desc), vm);
+  if ((options & AllowUnregistered) > 0)
+    program_options::store(program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
+  else
+    program_options::store(program_options::parse_command_line(argc, argv, desc), vm);
   program_options::notify(vm);
   if (vm.count("help"))
   {
