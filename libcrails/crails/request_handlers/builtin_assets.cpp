@@ -49,7 +49,8 @@ bool BuiltinAssetsHandler::process(const string& path, BuildingResponse& respons
   if (it != library.end())
   {
     response.set_header(HttpHeader::content_type, it->second.mimetype);
-    response.set_header(HttpHeader::content_encoding, library.get_content_encoding().data());
+    if (library.get_content_encoding().length() > 0)
+      response.set_header(HttpHeader::content_encoding, library.get_content_encoding().data());
     response.set_status_code(HttpStatus::ok);
     response.set_body(it->second.data, it->second.length);
     response.send();
