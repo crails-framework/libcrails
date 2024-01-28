@@ -16,6 +16,11 @@ namespace Crails
 #else
       cache_enabled = true;
 #endif
+#ifdef CACHEABLE_MAX_SIZE
+      cacheable_max_size = CACHEABLE_MAX_SIZE;
+#else
+      cacheable_max_size = 187500;
+#endif
     }
 
     void operator()(Context&, std::function<void(bool)> callback) const override;
@@ -29,8 +34,9 @@ namespace Crails
     virtual void set_headers_for_file(BuildingResponse& response, const std::string& fullpath) const {}
 
   private:
-    bool       cache_enabled;
-    FileCache& file_cache;
+    bool           cache_enabled;
+    FileCache&     file_cache;
+    std::uintmax_t cacheable_max_size;
   };
 }
   

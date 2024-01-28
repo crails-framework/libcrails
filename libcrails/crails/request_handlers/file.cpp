@@ -186,7 +186,8 @@ bool FileRequestHandler::send_file(const std::string& fullpath, BuildingResponse
 {
   FileCache::Lock lock(file_cache);
   bool cached = file_cache.contains(fullpath);
-  auto file   = cache_enabled ? file_cache.require(fullpath) : file_cache.create_instance(fullpath);
+  bool cacheable = std::filesystem::exists(fullpath) && std::filesystem::file_size(fullpath) <= cacheable_max_size;
+  auto file = cache_enabled && cacheable ? file_cache.require(fullpath) : file_cache.create_instance(fullpath);
 
   if (file)
   {
