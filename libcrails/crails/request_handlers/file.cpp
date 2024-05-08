@@ -194,11 +194,9 @@ bool FileRequestHandler::send_file(const std::string& fullpath, BuildingResponse
     const string& str = *file;
 
     response.set_header(HttpHeader::content_type, get_mimetype(fullpath));
+    response.set_header(HttpHeader::accept_ranges, "bytes");
     if (code == HttpStatus::partial_content)
-    {
-      response.set_header(HttpHeader::accept_ranges, "bytes");
       response.set_header(HttpHeader::content_range, get_content_range(range, str.length()));
-    }
     set_headers_for_file(response, fullpath);
     response.set_status_code(code);
     if (range.second == 0)
