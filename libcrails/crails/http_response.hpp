@@ -4,6 +4,7 @@
 # include "server/connection.hpp"
 # include <crails/render_target.hpp>
 # include <unordered_map>
+# include <string_view>
 
 namespace Crails
 {
@@ -14,10 +15,12 @@ namespace Crails
     {}
 
     void set_response(HttpStatus code, const std::string& body);
+    void set_response(HttpStatus code, const std::string_view body);
     void set_status_code(HttpStatus code) { get_raw_response().result(code); }
     void set_header(boost::beast::http::field key, const std::string& value) { get_raw_response().set(key, value); }
     void set_header(const std::string& key, const std::string& value) override { get_raw_response().set(key, value); }
     void set_body(const char* str, size_t size) override;
+    void set_body(const std::string_view value) { set_body(value.data(), value.length()); }
     void send();
     bool sent() const { return already_sent; }
 
