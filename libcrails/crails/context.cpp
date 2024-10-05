@@ -29,10 +29,15 @@ void Context::protect(std::function<void()> callback)
 void Context::run()
 {
   logger << Logger::Debug << "Crails::Context: pipeline start" << Logger::endl;
-  run_parser(
-    server.request_parsers.begin(),
-    bind(&Context::on_parsed, this, placeholders::_1)
-  );
+  if (server.request_parsers.begin() != server.request_parsers.end())
+  {
+    run_parser(
+      server.request_parsers.begin(),
+      bind(&Context::on_parsed, this, placeholders::_1)
+    );
+  }
+  else
+    on_parsed(true);
   logger << Logger::Debug << "Crails::Context: pipeline end" << Logger::endl;
 }
 
