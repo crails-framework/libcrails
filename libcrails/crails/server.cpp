@@ -28,7 +28,7 @@ static string initialize_public_path()
 {
   const char* environment_variable = std::getenv("PUBLIC_PATH");
   const string non_canonical_path = !environment_variable
-    ? filesystem::current_path().string() + "/public"
+    ? (filesystem::current_path() / "public").string()
     : string(environment_variable);
 
   try
