@@ -23,20 +23,31 @@ namespace Crails
     std::string    target;
   };
 
+  template<typename T>
+  struct UrlFragmentEncode { static inline std::string run(T fragment) { return std::to_string(fragment); } };
+  template<>
+  struct UrlFragmentEncode<std::string_view> { static inline std::string run(const std::string_view fragment) { return Url::encode(std::string(fragment)); } };
+  template<>
+  struct UrlFragmentEncode<std::string> { static inline std::string run(const std::string& fragment) { return Url::encode(fragment); } };
+  template<>
+  struct UrlFragmentEncode<const char*> { static inline std::string run(const char* fragment) { return Url::encode(fragment); } };
+
   struct UrlBuilder
   {
     template<typename T, typename... ARGS>
     static void fragments(std::stringstream& stream, T fragment, ARGS... right)
     {
-      stream << Url::encode(fragment) << '/';
+      stream << UrlFragmentEncode<T>::run(fragment) << '/';
       fragments(stream, right...);
     }
 
     template<typename T>
     static void fragments(std::stringstream& stream, T fragment)
     {
-      stream << Url::encode(fragment);
+      stream << UrlFragmentEncode<T>::run(fragment);
     }
+
+    static void fragments(std::stringstream&) {}
   };
 
   template<typename... ARGS>
