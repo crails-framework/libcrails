@@ -36,7 +36,7 @@ boost::asio::ip::tcp::endpoint ProgramOptions::get_endpoint() const
 {
   return boost::asio::ip::tcp::endpoint{
     boost::asio::ip::make_address(get_value("hostname", std::string("0.0.0.0"))),
-    get_value<unsigned short>("port", 3001)
+    get_value<unsigned short>("port", CRAILS_DEFAULT_PORT)
   };
 }
 

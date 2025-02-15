@@ -3,6 +3,9 @@
 
 # include <boost/program_options.hpp>
 # include <boost/asio/ip/tcp.hpp>
+# ifndef CRAILS_DEFAULT_PORT
+#  define CRAILS_DEFAULT_PORT 3001
+# endif
 
 namespace Crails
 {
