@@ -28,12 +28,13 @@ namespace Crails
     stringstream file_name;
     stringstream view_name;
 
+    context.response.set_status_code(code);
     file_name << (unsigned int)(code);
     view_name << "errors/" << file_name.str();
     if (file_handler &&
         file_handler->send_file("public/" + file_name.str() + ".html", context.response, code))
       return ;
-    else
+    else if (Renderers::singleton::get() != nullptr)
     {
       const HttpRequest& request = context.connection->get_request();
       auto accept_header = request.find(HttpHeader::accept);

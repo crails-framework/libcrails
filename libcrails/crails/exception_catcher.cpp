@@ -1,4 +1,5 @@
 #include <crails/logger.hpp>
+#include <crails/renderer.hpp>
 #include "exception_catcher.hpp"
 #include "context.hpp"
 #include "server.hpp"
@@ -72,13 +73,14 @@ void ExceptionCatcher::run(Crails::Context& context, std::function<void()> callb
 
 void ExceptionCatcher::response_exception(Crails::Context& context, string e_name, string e_what) const
 {
+  context.response.set_status_code(HttpStatus::internal_server_error);
   logger << Logger::Error << "# Catched exception " << e_name << ": " << e_what;
   if (context.params["backtrace"].exists())
     logger << "\n" << context.params["backtrace"].as<string>();
   logger << Logger::endl;
   if (Crails::environment == Crails::Production)
     render_error_view(context, HttpStatus::internal_server_error);
-  else
+  else if (Renderers::singleton::get() != nullptr)
     render_exception_view(context, e_name, e_what);
   context.on_finished();
 }
