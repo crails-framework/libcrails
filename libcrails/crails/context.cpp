@@ -1,4 +1,5 @@
 #include <crails/logger.hpp>
+#include <sstream>
 #include "context.hpp"
 #include "request_parser.hpp"
 #include "request_handler.hpp"
@@ -114,18 +115,20 @@ void Context::on_handled(bool handled)
   on_finished();
 }
 
-static void output_request_timers(Data timers)
+static string output_request_timers(Data timers)
 {
   int i = 0;
+  ostringstream stream;
 
-  logger << ' ';
-  timers.each([&i](Data timer) -> bool
+  stream << ' ';
+  timers.each([&i, &stream](Data timer) -> bool
   {
-    logger << (i++ == 0 ? "(" : ", ");
-    logger << timer.get_key() << ": " << timer.as<float>() << 's';
+    stream << (i++ == 0 ? "(" : ", ");
+    stream << timer.get_key() << ": " << timer.as<float>() << 's';
     return true;
   });
-  logger << ')';
+  stream << ')';
+  return stream.str();
 }
 
 void Context::on_finished()
@@ -135,10 +138,12 @@ void Context::on_finished()
 
   response.send();
   logger << Logger::Info << "# Responded to "
-         << params["method"].defaults_to<string>("GET")
-         << " '" << params["uri"].defaults_to<string>("")
-         << "' with " << code << " in " << crails_time << 's';
+         << [this, crails_time, code]() { return
+           params["method"].defaults_to<string>("GET") +
+           " '" + params["uri"].defaults_to<string>(connection->get_request().target()) +
+           "' with " + to_string(code) + " in " + to_string(crails_time) + 's'; };
   if (params["response-time"].exists())
-    output_request_timers(params["response-time"]);
+    logger << bind(output_request_timers, params["response-time"]);
   logger << Logger::endl;
+  end_promise.set_value(code);
 }

@@ -8,6 +8,7 @@
 # include "exception_catcher.hpp"
 # include "utils/timer.hpp"
 # include <mutex>
+# include <future>
 
 namespace Crails
 {
@@ -19,9 +20,10 @@ namespace Crails
     friend class ExceptionCatcher;
     friend class Connection;
     friend class Tests::Request;
-    bool                      handled = false;
-    ExceptionCatcher::Context exception_context;
-    const Server&             server;
+    bool                         handled = false;
+    ExceptionCatcher::Context    exception_context;
+    const Server&                server;
+    std::promise<unsigned short> end_promise;
   public:
     Context(const Server& server, Connection& connection);
     ~Context();
@@ -33,9 +35,11 @@ namespace Crails
     mutable std::mutex          mutex;
 
     void protect(std::function<void()>);
+    std::future<unsigned short> get_future() { return end_promise.get_future(); }
 
-  private:
+  protected:
     void run();
+  private:
     void run_parser(Server::RequestParsers::const_iterator, std::function<void(bool)>);
     void run_handler(Server::RequestHandlers::const_iterator, std::function<void(bool)>);
 
