@@ -34,6 +34,7 @@ namespace Crails
     void wait_for_body(Context&, std::function<void()>) const;
   protected:
     virtual void body_received(Context&, const std::string& body) const = 0;
+    virtual void body_too_large(Context&) const;
   private:
     struct PendingBody
     {

@@ -26,6 +26,12 @@ void BodyParser::PendingBody::on_received_chunk(string_view chunk)
     finished_callback();
 }
 
+void BodyParser::body_too_large(Context& context) const
+{
+  context.response.set_status_code(HttpStatus::payload_too_large);
+  context.response.send();
+}
+
 void BodyParser::wait_for_body(Context& context, function<void()> finished_callback) const
 {
   shared_ptr<PendingBody> pending_body = make_shared<PendingBody>(context);
@@ -38,8 +44,14 @@ void BodyParser::wait_for_body(Context& context, function<void()> finished_callb
 
   if (pending_body->total_read >= pending_body->to_read)
     callback();
+  else if (pending_body->to_read > pending_body->read_buffer.max_size())
+  {
+    body_too_large(context);
+    finished_callback();
+  }
   else
   {
+    pending_body->read_buffer.reserve(pending_body->to_read);
     pending_body->finished_callback = callback;
     context.connection->on_received_body_chunk(
       std::bind(
