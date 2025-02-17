@@ -4,6 +4,8 @@ using namespace std;
 
 namespace Crails
 {
+  const Environment environment = Production;
+
   string environment_name(Environment environment)
   {
     switch (environment)

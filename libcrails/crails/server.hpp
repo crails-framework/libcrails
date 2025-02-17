@@ -43,6 +43,7 @@ namespace Crails
     static const Directories&       get_public_paths() { return public_paths; }
     static const std::string&       get_temporary_path() { return temporary_path; }
     static boost::asio::io_context& get_io_context();
+    static void set_environment(Environment);
 
   protected:
     void add_request_handler(RequestHandler* request_handler);
@@ -62,6 +63,7 @@ namespace Crails
     static RequestParsers  request_parsers;
     static RequestHandlers request_handlers;
     static FileCache       file_cache;
+    bool                   running = false;
     bool                   marked_for_restart = false;
   };
 }

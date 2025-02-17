@@ -87,6 +87,7 @@ void Server::launch(int argc, const char **argv)
     restart_signal.async_wait(std::bind(&Server::restart, this));
     for (size_t i = 0 ; i < options.get_thread_count() - 1 ; ++i)
       thread_pool.emplace_back([&io_context]() { io_context.run(); });
+    running = true;
     io_context.run();
     listener->stop();
     for (thread& t : thread_pool)
@@ -96,6 +97,15 @@ void Server::launch(int argc, const char **argv)
   }
   else
     logger << Logger::Error << "!! Could not listen on endpoint: " << error.message() << Logger::endl;
+}
+
+void Server::set_environment(Environment value)
+{
+  Server* self = Server::singleton::get();
+
+  if (self && self->running)
+    throw boost_ext::runtime_error("calling Server::set_environment while the server is running is forbidden");
+  const_cast<Environment&>(Crails::environment) = value;
 }
 
 void Server::stop()
