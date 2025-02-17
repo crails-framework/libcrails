@@ -7,6 +7,7 @@
 # include "http_response.hpp"
 # include "exception_catcher.hpp"
 # include "utils/timer.hpp"
+# include <crails/shared_vars.hpp>
 # include <mutex>
 # include <future>
 
@@ -31,6 +32,7 @@ namespace Crails
     std::shared_ptr<Connection> connection;
     BuildingResponse            response;
     Params                      params;
+    SharedVars                  vars;
     Utils::Timer                timer;
     mutable std::mutex          mutex;
 
