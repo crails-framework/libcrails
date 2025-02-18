@@ -4,6 +4,7 @@
 # include "http.hpp"
 # include "file_cache.hpp"
 # include "exception_catcher.hpp"
+# include "environment.hpp"
 # include <crails/utils/singleton.hpp>
 # include <crails/datatree.hpp>
 
