@@ -3,6 +3,9 @@
 
 # include <string>
 
-std::string get_mimetype(const std::string& filename);
+namespace Crails
+{
+  std::string get_mimetype(const std::string& filename);
+}
 
 #endif

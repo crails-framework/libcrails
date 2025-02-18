@@ -37,14 +37,17 @@ static const ExtensionMatch extensions[] = {
   ExtensionMatch("pdf",                  "application/pdf")
 };
 
-std::string get_mimetype(const std::string& filename)
+namespace Crails
 {
-  constexpr int count = sizeof(extensions) / sizeof(ExtensionMatch);
-
-  for (unsigned short i = 0 ; i < count ; ++i)
+  string get_mimetype(const string& filename)
   {
-    if (regex_search(filename, extensions[i].regexp))
-      return (extensions[i].mime);
+    constexpr int count = sizeof(extensions) / sizeof(ExtensionMatch);
+
+    for (unsigned short i = 0 ; i < count ; ++i)
+    {
+      if (regex_search(filename, extensions[i].regexp))
+        return (extensions[i].mime);
+    }
+    return ("application/octet-stream");
   }
-  return ("application/octet-stream");
 }
