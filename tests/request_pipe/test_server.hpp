@@ -11,6 +11,7 @@ struct TestServer : public Crails::Server
 public:
   TestServer()
   {
+    set_environment(Crails::Test);
   }
 
   template<typename LISTA, typename LISTB>

@@ -1,12 +1,5 @@
 #include <crails/program_options.hpp>
-#include <crails/environment.hpp>
-#include <iostream>
 #include <thread>
-
-namespace Crails
-{
-  Environment environment = Production;
-}
 
 #undef NODEBUG
 #include <cassert>

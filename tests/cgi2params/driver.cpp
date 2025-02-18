@@ -1,11 +1,5 @@
 #include <crails/url.hpp>
 #include <crails/datatree.hpp>
-#include <crails/environment.hpp>
-
-namespace Crails
-{
-  Environment environment = Production;
-}
 
 #undef NODEBUG
 #include <cassert>

@@ -1,13 +1,7 @@
 #include <crails/program_options.hpp>
-#include <crails/environment.hpp>
 #include <iostream>
 #include "test_server.hpp"
 #include <crails/session_store/no_session_store.hpp>
-
-namespace Crails
-{
-  Environment environment = Test;
-}
 
 #undef NODEBUG
 #include <cassert>
