@@ -14,7 +14,7 @@ namespace Crails
     BuildingResponse(Connection& connection) : connection(connection)
     {}
 
-    void set_response(HttpStatus code, const std::string& body);
+    void set_response(HttpStatus code, const std::string& body) { set_response(code, std::string_view(body)); }
     void set_response(HttpStatus code, const std::string_view body);
     void set_status_code(HttpStatus code) { get_raw_response().result(code); }
     void set_header(boost::beast::http::field key, const std::string& value) { get_raw_response().set(key, value); }

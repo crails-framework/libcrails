@@ -4,10 +4,10 @@
 using namespace std;
 using namespace Crails;
 
-void BuildingResponse::set_response(HttpStatus code, const string& body)
+void BuildingResponse::set_response(HttpStatus code, const string_view body)
 {
   set_status_code(code);
-  set_body(body.c_str(), body.size());
+  set_body(body.data(), body.length());
 }
 
 void BuildingResponse::set_body(const char* str, size_t size)
