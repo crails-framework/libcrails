@@ -138,10 +138,15 @@ void Context::on_finished()
 
   response.send();
   logger << Logger::Info << "# Responded to "
-         << [this, crails_time, code]() { return
+         << [this, crails_time, code]()
+  {
+    const auto&  request = connection->get_request();
+    const string destination(request.target());
+    return
            params["method"].defaults_to<string>("GET") +
-           " '" + params["uri"].defaults_to<string>(connection->get_request().target()) +
-           "' with " + to_string(code) + " in " + to_string(crails_time) + 's'; };
+           " '" + params["uri"].defaults_to<string>(destination) +
+           "' with " + to_string(code) + " in " + to_string(crails_time) + 's';
+  };
   if (params["response-time"].exists())
     logger << bind(output_request_timers, params["response-time"]);
   logger << Logger::endl;
