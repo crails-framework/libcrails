@@ -32,6 +32,8 @@ namespace Crails
     {
       SINGLETON(Factory)
     public:
+      virtual ~Factory() {}
+
       static std::unique_ptr<SessionStore> create()
       {
         return Factory::singleton::require().make();
