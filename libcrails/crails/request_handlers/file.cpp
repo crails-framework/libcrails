@@ -109,11 +109,15 @@ static std::string get_content_range(pair<unsigned int, unsigned int> range, siz
 
 static std::time_t http_date_to_timestamp(boost::beast::string_view str)
 {
+#ifdef _WIN32
+# pragma message("Warning: crails does not support If-Modified-Since header on Windows")
+#else
   static const char format[] = "%a, %d %b %Y %H:%M:%S %Z"; // rfc 1123
   struct tm tm;
   bzero(&tm, sizeof(tm));
   if (strptime(str.data(), format, &tm))
     return mktime(&tm);
+#endif
   return 0;
 }
 

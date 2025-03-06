@@ -74,7 +74,9 @@ void Server::launch(int argc, const char **argv)
   {
     boost::asio::io_context& io_context = get_io_context();
     boost::asio::signal_set stop_signals  (io_context, SIGINT, SIGTERM);
+#ifndef _WIN32
     boost::asio::signal_set restart_signal(io_context, SIGUSR2);
+#endif
     list<thread> thread_pool;
 
     initialize_pid_file(options.get_pidfile_path());
@@ -84,7 +86,9 @@ void Server::launch(int argc, const char **argv)
       << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl
       << ">> Pool Thread Size: " << options.get_thread_count() << Logger::endl;
     stop_signals  .async_wait(std::bind(&Server::stop, this));
+#ifndef _WIN32
     restart_signal.async_wait(std::bind(&Server::restart, this));
+#endif
     for (size_t i = 0 ; i < options.get_thread_count() - 1 ; ++i)
       thread_pool.emplace_back([&io_context]() { io_context.run(); });
     running = true;
