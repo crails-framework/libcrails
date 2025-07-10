@@ -22,6 +22,7 @@ namespace Crails
     friend class Connection;
     friend class Tests::Request;
     bool                         handled = false;
+    bool                         finished = false;
     ExceptionCatcher::Context    exception_context;
     const Server&                server;
     std::promise<unsigned short> end_promise;
@@ -48,6 +49,7 @@ namespace Crails
     void on_parsed(bool parsed);
     void on_handled(bool handled);
     void on_finished();
+    std::string responding_to_string();
   };
 }
 

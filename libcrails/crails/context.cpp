@@ -115,6 +115,14 @@ void Context::on_handled(bool handled)
   on_finished();
 }
 
+string Context::responding_to_string()
+{
+  const auto&  request = connection->get_request();
+  const string destination(request.target());
+  return params["method"].defaults_to<string>("GET") +
+         " '" + params["uri"].defaults_to<string>(destination) + '\'';
+}
+
 static string output_request_timers(Data timers)
 {
   int i = 0;
@@ -136,19 +144,22 @@ void Context::on_finished()
   float crails_time   = timer.GetElapsedSeconds();
   unsigned short code = static_cast<unsigned short>(connection->get_response().result());
 
-  response.send();
-  logger << Logger::Info << "# Responded to "
-         << [this, crails_time, code]()
-  {
-    const auto&  request = connection->get_request();
-    const string destination(request.target());
-    return
-           params["method"].defaults_to<string>("GET") +
-           " '" + params["uri"].defaults_to<string>(destination) +
-           "' with " + to_string(code) + " in " + to_string(crails_time) + 's';
-  };
-  if (params["response-time"].exists())
-    logger << bind(output_request_timers, params["response-time"]);
-  logger << Logger::endl;
-  end_promise.set_value(code);
+  try {
+    response.send();
+    end_promise.set_value(code);
+    logger << Logger::Info << "# Responded to "
+           << [this, crails_time, code]()
+    {
+      return responding_to_string() +
+             " with " + to_string(code) + " in " + to_string(crails_time) + 's';
+    };
+    if (params["response-time"].exists())
+      logger << bind(output_request_timers, params["response-time"]);
+    logger << Logger::endl;
+  } catch (const std::future_error& error) {
+    logger << Logger::Error << "!! Responding to " << [this, &error]()
+    {
+      return responding_to_string() + ": Context::on_finished: " + error.what();
+    } << Logger::endl;
+  }
 }
