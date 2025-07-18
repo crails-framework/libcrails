@@ -66,6 +66,7 @@ namespace Crails
     static FileCache       file_cache;
     bool                   running = false;
     bool                   marked_for_restart = false;
+    bool                   shutdown_requested = false;
   };
 }
 

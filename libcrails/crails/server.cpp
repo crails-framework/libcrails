@@ -92,6 +92,9 @@ void Server::launch(int argc, const char **argv)
     for (size_t i = 0 ; i < options.get_thread_count() - 1 ; ++i)
       thread_pool.emplace_back([&io_context]() { io_context.run(); });
     running = true;
+    shutdown_requested = false;
+    while (!shutdown_requested)
+      io_context.run_for(chrono::seconds(1));
     io_context.run();
     listener->stop();
     for (thread& t : thread_pool)
@@ -119,7 +122,7 @@ void Server::stop()
   logger << Logger::Info << ">> Crails server will " << action << '.' << Logger::endl;
   logger << ">> Waiting for requests to end..." << Logger::endl;
   get_io_context().stop();
-  logger << ">> Done." << Logger::endl;
+  shutdown_requested = true;
 }
 
 void Server::restart()
