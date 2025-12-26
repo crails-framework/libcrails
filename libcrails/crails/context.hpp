@@ -39,6 +39,7 @@ namespace Crails
 
     void protect(std::function<void()>);
     std::future<unsigned short> get_future() { return end_promise.get_future(); }
+    bool is_finished() const { return finished; }
 
   protected:
     void run();

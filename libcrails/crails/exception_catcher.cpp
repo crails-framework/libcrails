@@ -78,11 +78,14 @@ void ExceptionCatcher::response_exception(Crails::Context& context, string e_nam
   if (context.params["backtrace"].exists())
     logger << "\n" << context.params["backtrace"].as<string>();
   logger << Logger::endl;
-  if (Crails::environment == Crails::Production)
-    render_error_view(context, HttpStatus::internal_server_error);
-  else if (Renderers::singleton::get() != nullptr)
-    render_exception_view(context, e_name, e_what);
-  context.on_finished();
+  if (!context.is_finished()) [[likely]]
+  {
+    if (Crails::environment == Crails::Production)
+      render_error_view(context, HttpStatus::internal_server_error);
+    else if (Renderers::singleton::get() != nullptr)
+      render_exception_view(context, e_name, e_what);
+    context.on_finished();
+  }
 }
 
 void ExceptionCatcher::default_exception_handler(Crails::Context& context, const string& exception_name, const string& message, const string& trace)

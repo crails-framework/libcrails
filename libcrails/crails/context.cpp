@@ -144,22 +144,26 @@ void Context::on_finished()
   float crails_time   = timer.GetElapsedSeconds();
   unsigned short code = static_cast<unsigned short>(connection->get_response().result());
 
-  try {
-    response.send();
-    end_promise.set_value(code);
-    logger << Logger::Info << "# Responded to "
-           << [this, crails_time, code]()
-    {
-      return responding_to_string() +
-             " with " + to_string(code) + " in " + to_string(crails_time) + 's';
-    };
-    if (params["response-time"].exists())
-      logger << bind(output_request_timers, params["response-time"]);
-    logger << Logger::endl;
-  } catch (const std::future_error& error) {
-    logger << Logger::Error << "!! Responding to " << [this, &error]()
-    {
-      return responding_to_string() + ": Context::on_finished: " + error.what();
-    } << Logger::endl;
+  if (!finished) [[likely]]
+  {
+    finished = true;
+    try {
+      response.send();
+      end_promise.set_value(code);
+      logger << Logger::Info << "# Responded to "
+             << [this, crails_time, code]()
+      {
+        return responding_to_string() +
+               " with " + to_string(code) + " in " + to_string(crails_time) + 's';
+      };
+      if (params["response-time"].exists())
+        logger << bind(output_request_timers, params["response-time"]);
+      logger << Logger::endl;
+    } catch (const std::future_error& error) {
+      logger << Logger::Error << "!! Responding to " << [this, &error]()
+      {
+        return responding_to_string() + ": Context::on_finished: " + error.what();
+      } << Logger::endl;
+    }
   }
 }
