@@ -76,12 +76,16 @@ void Connection::read_header(boost::beast::error_code ec, std::size_t bytes_tran
   {
     auto content_length = parser->content_length();
 
+    logger << Logger::Debug << connection_id << "Received header " << bytes_transferred << " bytes" << Logger::endl;
     response.keep_alive(parser->keep_alive());
     request = parser->get();
     std::make_shared<Context>(server, *this)->run();
     body = std::string();
     if (content_length && *content_length > 0)
+    {
+      logger << Logger::Debug << connection_id << "Expecting body of " << *content_length << " bytes" << Logger::endl;
       expect_body();
+    }
     else
       reset_body_chunk_callback();
   }
@@ -95,12 +99,14 @@ void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
   {
     std::string_view chunk(body_buffer, bytes_transferred);
 
+    logger << Logger::Debug << connection_id << "Received " << bytes_transferred << " bytes" << Logger::endl;
     if (body_chunk_callback && chunk.length() > 0)
     {
       if (body.length() + chunk.length() <= max_body_size)
         body += chunk;
       body_chunk_callback(chunk);
     }
+    logger << Logger::Debug << connection_id << "Remaining " << get_content_length_remaining() << " bytes" << Logger::endl;
     if (get_content_length_remaining() > 0)
       expect_body();
     else if (body_chunk_callback)
