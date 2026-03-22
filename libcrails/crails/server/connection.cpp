@@ -121,8 +121,9 @@ void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
 
 void Connection::on_read_error(boost::beast::error_code ec)
 {
-  if (ec != boost::asio::error::eof && ec != boost::asio::error::timed_out)
-    logger << Logger::Debug << "!! Crails failed to read on socket: " << ec.message() << Logger::endl;
+  logger << Logger::Debug << "!! Crails failed to read on socket: " << ec.message() << Logger::endl;
+  if (ec == boost::asio::error::operation_aborted)
+    logger << Logger::Debug << connection_id << " Operation aborted" << Logger::endl;
   else if (ec == boost::asio::error::eof)
     logger << Logger::Debug << connection_id << " EOF received" << Logger::endl;
   else if (ec == boost::asio::error::timed_out)
@@ -133,6 +134,11 @@ void Connection::on_read_error(boost::beast::error_code ec)
 
 void Connection::write()
 {
+  if (get_content_length_remaining() > 0)
+  {
+    beast::get_lowest_layer(stream).cancel();
+    response.keep_alive(false);
+  }
   beast::http::async_write(
     stream, response,
     beast::bind_front_handler(&Connection::on_write, shared_from_this(), response.keep_alive())
