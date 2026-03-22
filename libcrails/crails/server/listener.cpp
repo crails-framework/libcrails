@@ -49,8 +49,10 @@ void Listener::wait_accept()
 
 void Listener::on_accept(boost::beast::error_code ec)
 {
-  if (!ec)
+  if (!ec) [[likely]]
     std::make_shared<Connection>(server, std::move(socket))->start();
+  else if (ec == boost::asio::error::operation_aborted)
+    return ;
   else
     logger << Logger::Info << "Crails::Listener failed to accept a connection: " << ec.message() << Logger::endl;
   wait_accept();
