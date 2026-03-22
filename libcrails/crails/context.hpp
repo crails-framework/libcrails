@@ -21,11 +21,12 @@ namespace Crails
     friend class ExceptionCatcher;
     friend class Connection;
     friend class Tests::Request;
-    bool                         handled = false;
-    std::atomic_flag             finished = ATOMIC_FLAG_INIT;
-    ExceptionCatcher::Context    exception_context;
-    const Server&                server;
-    std::promise<unsigned short> end_promise;
+    bool                               handled = false;
+    std::atomic_flag                   finished = ATOMIC_FLAG_INIT;
+    ExceptionCatcher::Context          exception_context;
+    const Server&                      server;
+    std::promise<unsigned short>       end_promise;
+    std::shared_future<unsigned short> end_future;
   public:
     Context(const Server& server, Connection& connection);
     ~Context();
@@ -38,7 +39,7 @@ namespace Crails
     mutable std::mutex          mutex;
 
     void protect(std::function<void()>);
-    std::future<unsigned short> get_future() { return end_promise.get_future(); }
+    std::shared_future<unsigned short> get_future() { return end_future; }
     bool is_finished() const { return finished.test(); }
 
   protected:

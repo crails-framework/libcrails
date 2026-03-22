@@ -12,7 +12,8 @@ namespace Crails { void render_error_view(Context&, HttpStatus); }
 Context::Context(const Server& server, Connection& connection) :
   server(server),
   connection(connection.shared_from_this()),
-  response(connection)
+  response(connection),
+  end_future(end_promise.get_future().share())
 {
 }
 
