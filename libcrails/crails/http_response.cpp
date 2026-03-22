@@ -37,9 +37,6 @@ void BuildingResponse::set_body(string&& value)
 
 void BuildingResponse::send()
 {
-  if (!already_sent)
-  {
+  if (!already_sent.test_and_set())
     connection.write();
-    already_sent = true;
-  }
 }

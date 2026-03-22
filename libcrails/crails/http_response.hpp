@@ -3,6 +3,7 @@
 
 # include "server/connection.hpp"
 # include <crails/render_target.hpp>
+# include <atomic>
 # include <unordered_map>
 # include <string_view>
 
@@ -23,7 +24,7 @@ namespace Crails
     void set_body(const char* str, size_t size) override;
     void set_body(std::string&& body) override;
     void send();
-    bool sent() const { return already_sent; }
+    bool sent() const { return already_sent.test(); }
 
     HttpStatus get_status_code() const { return get_raw_response().result(); }
     HttpResponse& get_raw_response() { return connection.get_response(); }
@@ -31,7 +32,7 @@ namespace Crails
 
   private:
     Connection& connection;
-    bool        already_sent = false;
+    std::atomic_flag already_sent = ATOMIC_FLAG_INIT;
   };
 }
 
