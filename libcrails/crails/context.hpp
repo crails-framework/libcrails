@@ -22,7 +22,7 @@ namespace Crails
     friend class Connection;
     friend class Tests::Request;
     bool                         handled = false;
-    bool                         finished = false;
+    std::atomic_flag             finished = ATOMIC_FLAG_INIT;
     ExceptionCatcher::Context    exception_context;
     const Server&                server;
     std::promise<unsigned short> end_promise;
@@ -39,7 +39,7 @@ namespace Crails
 
     void protect(std::function<void()>);
     std::future<unsigned short> get_future() { return end_promise.get_future(); }
-    bool is_finished() const { return finished; }
+    bool is_finished() const { return finished.test(); }
 
   protected:
     void run();

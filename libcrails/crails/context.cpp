@@ -144,9 +144,8 @@ void Context::on_finished()
   float crails_time   = timer.GetElapsedSeconds();
   unsigned short code = static_cast<unsigned short>(connection->get_response().result());
 
-  if (!finished) [[likely]]
+  if (!finished.test_and_set()) [[likely]]
   {
-    finished = true;
     try {
       response.send();
       end_promise.set_value(code);
