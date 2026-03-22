@@ -19,20 +19,17 @@ void BuildingResponse::set_response(HttpStatus code, const string_view body)
 void BuildingResponse::set_body(const char* str, size_t size)
 {
   auto&   response = get_raw_response();
-  string& out      = response.body();
 
-  response.content_length(size);
-  out.resize(size);
-  std::copy(str, str + size, out.begin());
+  response.body().assign(str, size);
+  response.prepare_payload();
 }
 
 void BuildingResponse::set_body(string&& value)
 {
   auto&   response = get_raw_response();
-  string& out      = response.body();
 
-  response.content_length(value.length());
-  out = std::move(value);
+  response.body() = std::move(value);
+  response.prepare_payload();
 }
 
 void BuildingResponse::send()
