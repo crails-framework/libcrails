@@ -79,8 +79,8 @@ void Connection::read_header(boost::beast::error_code ec, std::size_t bytes_tran
     logger << Logger::Debug << connection_id << "Received header " << bytes_transferred << " bytes" << Logger::endl;
     response.keep_alive(parser->keep_alive());
     request = parser->get();
-    std::make_shared<Context>(server, *this)->run();
     body = std::string();
+    std::make_shared<Context>(server, *this)->run();
     if (content_length && *content_length > 0)
     {
       logger << Logger::Debug << connection_id << "Expecting body of " << *content_length << " bytes" << Logger::endl;
