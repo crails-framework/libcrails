@@ -46,6 +46,8 @@ namespace Crails
     static boost::asio::io_context& get_io_context();
     static void set_environment(Environment);
 
+    bool allow_keep_alive() const { return keep_alive_enabled; }
+
   protected:
     void add_request_handler(RequestHandler* request_handler);
     void add_request_parser(RequestParser* request_parser);
@@ -66,6 +68,7 @@ namespace Crails
     static FileCache       file_cache;
     bool                   running = false;
     bool                   marked_for_restart = false;
+    bool                   keep_alive_enabled = false;
   };
 }
 

@@ -12,12 +12,14 @@ template<typename Socket> static std::string socket_description(Socket& socket) 
 
 Connection::Connection(const Server& server_, HttpRequest request) :
   server(server_),
+  strand(boost::asio::make_strand(server_.get_io_context())),
   stream(std::move(asio::ip::tcp::socket(server.get_io_context()))),
   request(request)
 {}
 
 Connection::Connection(const Server& server_, asio::ip::tcp::socket socket_) :
   server(server_),
+  strand(boost::asio::make_strand(server_.get_io_context())),
   stream(std::move(socket_))
 {
   static thread_local unsigned int i = 0;
@@ -37,7 +39,7 @@ Connection::~Connection()
 void Connection::start()
 {
   asio::dispatch(
-    stream.get_executor(),
+    strand,
     beast::bind_front_handler(&Connection::expect_read, shared_from_this())
   );
 }
@@ -76,14 +78,14 @@ void Connection::read_header(boost::beast::error_code ec, std::size_t bytes_tran
   {
     auto content_length = parser->content_length();
 
-    logger << Logger::Debug << connection_id << "Received header " << bytes_transferred << " bytes" << Logger::endl;
-    response.keep_alive(parser->keep_alive());
+    logger << Logger::Debug << connection_id << " Received header " << bytes_transferred << " bytes" << Logger::endl;
+    response.keep_alive(server.allow_keep_alive() && parser->keep_alive());
     request = parser->get();
     body = std::string();
     std::make_shared<Context>(server, *this)->run();
     if (content_length && *content_length > 0)
     {
-      logger << Logger::Debug << connection_id << "Expecting body of " << *content_length << " bytes" << Logger::endl;
+      logger << Logger::Debug << connection_id << " Expecting body of " << *content_length << " bytes" << Logger::endl;
       expect_body();
     }
     else
@@ -99,21 +101,24 @@ void Connection::read(beast::error_code ec, std::size_t bytes_transferred)
   {
     std::string_view chunk(body_buffer, bytes_transferred);
 
-    logger << Logger::Debug << connection_id << "Received " << bytes_transferred << " bytes" << Logger::endl;
+    logger << Logger::Debug << connection_id << " Received " << bytes_transferred << " bytes" << Logger::endl;
     if (body_chunk_callback && chunk.length() > 0)
     {
       if (body.length() + chunk.length() <= max_body_size)
         body += chunk;
       body_chunk_callback(chunk);
     }
-    logger << Logger::Debug << connection_id << "Remaining " << get_content_length_remaining() << " bytes" << Logger::endl;
+    logger << Logger::Debug << connection_id << " Remaining " << get_content_length_remaining() << " bytes" << Logger::endl;
     if (get_content_length_remaining() > 0)
       expect_body();
     else if (body_chunk_callback)
     {
-      body_chunk_callback(std::string_view());
+      auto discarding_body_chunk_callback = std::move(body_chunk_callback);
       reset_body_chunk_callback();
+      discarding_body_chunk_callback(std::string_view());
     }
+    else
+      logger << Logger::Debug << connection_id << " Ignoring read" << Logger::endl;
   }
   else
     on_read_error(ec);
@@ -139,6 +144,7 @@ void Connection::write()
     beast::get_lowest_layer(stream).cancel();
     response.keep_alive(false);
   }
+  logger << Logger::Debug << "Crails::Connection writing on: " << connection_id << Logger::endl;
   beast::http::async_write(
     stream, response,
     beast::bind_front_handler(&Connection::on_write, shared_from_this(), response.keep_alive())

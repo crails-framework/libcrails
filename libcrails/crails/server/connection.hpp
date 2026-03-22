@@ -3,6 +3,7 @@
 
 # include "../http.hpp"
 # include <boost/asio/ip/tcp.hpp>
+# include <boost/asio/strand.hpp>
 # include <boost/beast/core.hpp>
 # include <optional>
 
@@ -54,6 +55,7 @@ namespace Crails
     void reset_body_chunk_callback() { body_chunk_callback = std::function<void(std::string_view)>(); }
 
     const Server&             server;
+    boost::asio::strand<boost::asio::io_context::executor_type> strand;
     boost::beast::tcp_stream  stream;
     boost::beast::flat_buffer buffer{8192};
 
