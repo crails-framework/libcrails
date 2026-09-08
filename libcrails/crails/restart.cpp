@@ -12,7 +12,7 @@ static char** duplicate_arguments(int argc, const char** argv)
   {
     size_t length = strlen(argv[i]);
 
-    arguments[i] = new char[length];
+    arguments[i] = new char[length + 1];
     strncpy(arguments[i], argv[i], length);
     arguments[i][length] = 0;
   }
@@ -24,7 +24,7 @@ void Server::do_restart(int argc, const char** original_argv)
 {
   char** argv = duplicate_arguments(argc, original_argv);
 
-  execve(argv[0], argv, nullptr);
+  execvp(argv[0], argv);
   logger << Logger::Error << "!! execve failed, the server won't restart" << Logger::endl;
   for (int i = 0 ; argv[i] ; ++i) delete[] argv[i];
   delete[] argv;
