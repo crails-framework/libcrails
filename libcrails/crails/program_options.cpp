@@ -42,7 +42,8 @@ boost::asio::ip::tcp::endpoint ProgramOptions::get_endpoint() const
 
 unsigned short ProgramOptions::get_thread_count() const
 {
-  return get_value("threads", (unsigned short)(std::thread::hardware_concurrency()));
+  unsigned short recommended = get_value("threads", (unsigned short)(std::thread::hardware_concurrency()));
+  return std::max<unsigned short>(1, recommended);
 }
 
 std::string ProgramOptions::get_pidfile_path() const
