@@ -96,7 +96,7 @@ static std::pair<unsigned int, unsigned int> range_from_header(boost::beast::str
 
 static std::string get_content_range(pair<unsigned int, unsigned int> range, size_t length)
 {
-  std::stringstream result;
+  std::ostringstream result;
 
   result << "bytes ";
   if (range.first + range.second == 0)
@@ -204,6 +204,10 @@ bool FileRequestHandler::send_file(const std::string& fullpath, BuildingResponse
   {
     const string& str = *file;
 
+    if (range.first > range.second)
+      return false;
+    range.first  = std::min<unsigned int>(range.first, str.length());
+    range.second = std::min<unsigned int>(range.second, str.length());
     response.set_header(HttpHeader::content_type, get_mimetype(fullpath));
     response.set_header(HttpHeader::accept_ranges, "bytes");
     if (code == HttpStatus::partial_content)
