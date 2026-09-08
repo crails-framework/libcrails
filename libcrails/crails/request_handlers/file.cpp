@@ -17,21 +17,28 @@ const vector<pair<string, string> > compression_strategies = {{"br", "br"}, {"gz
 
 static string filepath_from_uri(string uri)
 {
-  std::error_code ec;
+  std::error_code ec, root_ec;
   size_t separator = uri.find('?');
-  filesystem::path result;
 
   if (separator != std::string::npos)
     uri.erase(separator);
-
   for (const string& public_path : Server::get_public_paths())
   {
+    auto canonical_root = filesystem::canonical(public_path, root_ec);
     auto canonical_path = filesystem::canonical(public_path + uri, ec);
 
-    if (!ec && canonical_path >= public_path)
-      return canonical_path.string();
-    else if (!ec)
-      logger << Logger::Info << "# Attempting to read unauthorized path '" << canonical_path.string() << '\'' << Logger::endl;
+    if (!ec && !root_ec)
+    {
+      auto mismatch_pair = std::mismatch(
+        canonical_root.begin(), canonical_root.end(),
+        canonical_path.begin(), canonical_path.end()
+      );
+
+      if (mismatch_pair.first == canonical_root.end())
+        return canonical_path.string();
+      else
+        logger << Logger::Info << "# Attempting to read unauthorized path '" << canonical_path.string() << '\'' << Logger::endl;
+    }
   }
   return "";
 }
