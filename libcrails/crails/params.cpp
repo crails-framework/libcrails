@@ -1,5 +1,6 @@
 #include "params.hpp"
 #include "session_store.hpp"
+#include <crails/logger.hpp>
 #include <filesystem>
 
 using namespace std;
@@ -12,8 +13,14 @@ Params::Params(void)
 
 Params::~Params(void)
 {
+  error_code ec;
+
   for (const File& file : files)
-    filesystem::remove(file.temporary_path);
+  {
+    filesystem::remove(file.temporary_path, ec);
+    if (ec)
+      logger << Logger::Warning << "# Failed to remove temporary upload '" << file.temporary_path << ": " << ec.message() << Logger::endl;
+  }
 }
 
 const Params::File* Params::get_upload(const string& key) const
