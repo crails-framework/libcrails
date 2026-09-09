@@ -1,95 +1,114 @@
 #include <vector>
-#include <regex>
+#include <list>
+#include <string>
+#include <string_view>
+#include <algorithm>
+#include <optional>
 #include "url.hpp"
 #include <crails/datatree.hpp>
-#include <string_view>
+#include <crails/logger.hpp>
 
 using namespace std;
 using namespace Crails;
 
 static const string_view opening_bracket = "%5B";
 static const string_view closing_bracket = "%5D";
-static const regex regexp("[^=&]*", regex_constants::ECMAScript | regex_constants::optimize);
+static constexpr size_t max_key_depth = 32;
 
-static void recursively_set_value(Data param, vector<string> key_stack, const string& value)
+static void assign_value(Data root, const vector<string>& key_stack, const string_view raw_value)
 {
-  if (key_stack.size() == 0)
-    param = Url::decode(value);
-  else
+  list<DataTree>                owned_subtrees;
+  vector<pair<Data, DataTree*>> pending_pushes;
+  Data                          current = root;
+
+  for (const string& encoded_key : key_stack)
   {
-    string key = Url::decode(key_stack.front());
+    const string key = Url::decode(encoded_key);
 
-    key_stack.erase(key_stack.begin());
-    if (key.length() == 0)
+    if (key.empty())
     {
-      DataTree sub_object;
+      owned_subtrees.emplace_back();
+      DataTree& subtree = owned_subtrees.back();
 
-      recursively_set_value(sub_object.as_data(), key_stack, value);
-      param.push_back(sub_object.as_data());
+      pending_pushes.emplace_back(current, &subtree);
+      current = subtree.as_data();
     }
     else
-    {
-      Data next = param[key];
-
-      recursively_set_value(next, key_stack, value);
-    }
+      current = current[key];
   }
+  current = Url::decode(raw_value);
+  for (auto it = pending_pushes.rbegin() ; it != pending_pushes.rend() ; ++it)
+    it->first.push_back(it->second->as_data());
+}
+
+static inline void parse_base_key(string_view str, size_t& pos, vector<string>& key_stack)
+{
+  size_t stop = min({
+    str.find('=', pos),
+    str.find('&', pos),
+    str.find(opening_bracket, pos)
+  });
+
+  if (stop == string_view::npos)
+    stop = str.length();
+  key_stack.push_back(string(str.substr(pos, stop - pos)));
+  pos = stop;
+}
+
+static inline bool parse_subscripts(string_view str, size_t& pos, vector<string>& key_stack)
+{
+  size_t end_bracket;
+
+  while (pos + opening_bracket.length() <= str.length()
+     && str.compare(pos, opening_bracket.length(), opening_bracket) == 0)
+  {
+    pos += opening_bracket.length();
+    end_bracket = str.find(closing_bracket, pos);
+    if (end_bracket == string_view::npos)
+    {
+      logger << Logger::Info << "# cgi2params: unterminated '[' in parameter, aborting query parsing" << Logger::endl;
+      return false;
+    }
+    if (key_stack.size() >= max_key_depth)
+    {
+      logger << Logger::Info << "# cgi2params: nesting exceeds " << max_key_depth << " levels, aborting query parsing" << Logger::endl;
+      return false;
+    }
+    key_stack.push_back(string(str.substr(pos, end_bracket - pos)));
+    pos = end_bracket + closing_bracket.length();
+  }
+  return true;
+}
+
+static inline void parse_value_and_assign(Data params, string_view str, size_t& pos, vector<string>& key_stack)
+{
+  size_t value_end;
+
+  pos++; // Skip '='
+  value_end = str.find('&', pos);
+  if (value_end == string_view::npos)
+    value_end = str.length();
+  assign_value(params, key_stack, str.substr(pos, value_end - pos));
+  pos = value_end;
 }
 
 namespace Crails
 {
-  void cgi2params(const Data& params, const string& encoded_str)
+  void cgi2params(const Data& params, const string_view str)
   {
-    string str(encoded_str);
-    string looping;
-    vector<string> key_stacks;
+    size_t pos = 0;
 
-    while (str.length())
+    while (pos < str.length())
     {
-      if (str == looping)
-        return ;
-      auto matches = sregex_iterator(str.begin(), str.end(), regexp);
+      vector<string> key_stack;
 
-      looping = str;
-      if (distance(matches, sregex_iterator()) > 0)
-      {
-        auto sub_key = str.find(opening_bracket);
-        smatch match = *matches;
-        auto   eo    = match.length(0);
-
-        if (sub_key != string::npos && (int)sub_key < match.position(0) + eo)
-          eo = sub_key - match.position(0);
-        key_stacks.push_back(str.substr(match.position(0), eo));
-        str.erase(match.position(0), eo);
-        while (str.find(opening_bracket) == 0)
-        {
-          str.erase(0, opening_bracket.length());
-          auto end_key = str.find(closing_bracket);
-          if (end_key != string::npos)
-          {
-            key_stacks.push_back(str.substr(0, end_key));
-            str.erase(0, end_key + closing_bracket.length());
-          }
-          else
-            return ;
-        }
-        if (str[0] == '=')
-        {
-          str.erase(0, 1);
-          matches = sregex_iterator(str.begin(), str.end(), regexp);
-          if (distance(matches, sregex_iterator()) > 0)
-          {
-            match = *matches;
-            recursively_set_value(params, key_stacks, str.substr(match.position(0), match.length(0)));
-            key_stacks.clear();
-            str.erase(match.position(0), match.length(0));
-          }
-        }
-        if (str[0] == '&')
-          str.erase(0, 1);
-      }
-      else
-        return ;
+      parse_base_key(str, pos, key_stack);
+      if (!parse_subscripts(str, pos, key_stack))
+        return;
+      if (pos < str.length() && str[pos] == '=')
+        parse_value_and_assign(params, str, pos, key_stack);
+      if (pos < str.length() && str[pos] == '&')
+        pos++;
     }
   }
 }

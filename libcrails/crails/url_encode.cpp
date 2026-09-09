@@ -29,14 +29,15 @@ static char hexToChar(char first, char second)
   return static_cast<char>(digit);
 }
 
-std::string Url::encode(const std::string& src)
+std::string Url::encode(std::string_view src)
 {
-  std::string                 result;
-  std::string::const_iterator iter;
+  std::string                      result;
+  std::string_view::const_iterator iter;
 
-  for(iter = src.begin() ; iter != src.end() ; ++iter)
+  result.reserve(src.length());
+  for (iter = src.begin() ; iter != src.end() ; ++iter)
   {
-    switch(*iter)
+    switch (*iter)
     {
     case ' ':
       result.append(1, '+');
@@ -64,33 +65,33 @@ std::string Url::encode(const std::string& src)
       break;
     }
   }  
-  return (result);
+  return result;
 }
 
-std::string Url::decode(const std::string& src)
+std::string Url::decode(std::string_view src)
 {
-  std::string                 result;
-  std::string::const_iterator iter;
-  char                        c;
+  std::string                      result;
+  std::string_view::const_iterator iter;
+  char                             c;
 
-  for(iter = src.begin(); iter != src.end(); ++iter)
+  result.reserve(src.length());
+  for (iter = src.begin(); iter != src.end(); ++iter)
   {
-    switch(*iter)
+    switch (*iter)
     {
     case '+':
       result.append(1, ' ');
       break;
     case '%':
-      // Don't assume well-formed input
-      if(std::distance(iter, src.end()) >= 2
-         && std::isxdigit(*(iter + 1)) && std::isxdigit(*(iter + 2))) {
+      if (std::distance(iter, src.end()) > 2
+       && std::isxdigit(static_cast<unsigned char>(*(iter + 1))) 
+       && std::isxdigit(static_cast<unsigned char>(*(iter + 2))))
+      {
         c = *++iter;
         result.append(1, hexToChar(c, *++iter));
       }
-      // Just pass the % through untouched
-      else {
+      else
         result.append(1, '%');
-      }
       break;
 
     default:
@@ -98,5 +99,5 @@ std::string Url::decode(const std::string& src)
       break;
     }
   }
-  return (result);
+  return result;
 }
