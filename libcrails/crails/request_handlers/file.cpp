@@ -1,4 +1,5 @@
 #include "../request_handlers/file.hpp"
+#include "../url.hpp"
 #include "../server.hpp"
 #include "../mimetype.hpp"
 #include "../http.hpp"
@@ -163,7 +164,7 @@ bool FileRequestHandler::process(Context& context) const
 {
   const auto&  request = context.connection->get_request();
   const string uri(request.target());
-  string       fullpath = filepath_from_uri(uri);
+  string       fullpath = filepath_from_uri(Url::decode(uri));
   auto         success_status = HttpStatus::ok;
 
   if (fullpath.length() == 0)
