@@ -109,7 +109,7 @@ void Server::set_environment(Environment value)
 
   if (self && self->running)
     throw boost_ext::runtime_error("calling Server::set_environment while the server is running is forbidden");
-  const_cast<Environment&>(Crails::environment) = value;
+  Crails::environment = value;
 }
 
 void Server::stop()

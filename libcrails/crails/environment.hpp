@@ -13,7 +13,7 @@ namespace Crails
     Test
   };
 
-  extern const Environment environment;
+  extern Environment environment;
 
   std::string environment_name(Environment);
 }
