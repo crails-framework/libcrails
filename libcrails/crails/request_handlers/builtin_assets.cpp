@@ -4,6 +4,14 @@
 using namespace Crails;
 using namespace std;
 
+static string request_handler_name(const BuiltinAssets& library)
+{
+  string base("builtin-assets:");
+
+  base += library.get_root_path();
+  return base;
+}
+
 bool BuiltinAssets::accepts(const HttpRequest& request) const
 {
   if (compression_strategy.length() > 0)
@@ -11,7 +19,7 @@ bool BuiltinAssets::accepts(const HttpRequest& request) const
     const auto accepted = request.find(HttpHeader::accept_encoding);
 
     return accepted != request.end() &&
-           accepted->value().find(compression_strategy.data()) != string::npos;
+           accepted->value().find(compression_strategy.data(), 0, compression_strategy.length()) != string::npos;
   }
   return true;
 }
@@ -22,7 +30,7 @@ void BuiltinAssets::add(const string_view name, const char* data, size_t length)
 }
 
 BuiltinAssetsHandler::BuiltinAssetsHandler(const BuiltinAssets& library)
-  : RequestHandler(string("builtin-assets:") + library.get_root_path().data()), library(library)
+  : RequestHandler(request_handler_name(library)), library(library)
 {
 }
 
