@@ -47,10 +47,12 @@ namespace Crails
     static void set_environment(Environment);
 
     bool allow_keep_alive() const { return keep_alive_enabled; }
+    unsigned int get_max_body_size() const { return max_body_size; }
 
   protected:
     void add_request_handler(RequestHandler* request_handler);
     void add_request_parser(RequestParser* request_parser);
+    void set_max_body_size(unsigned int value) { max_body_size = value; }
 
     static Directories public_paths;
     static std::string temporary_path;
@@ -69,6 +71,7 @@ namespace Crails
     bool                   running = false;
     bool                   marked_for_restart = false;
     bool                   keep_alive_enabled = false;
+    unsigned int           max_body_size = 5242880;
   };
 }
 

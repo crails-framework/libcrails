@@ -25,11 +25,13 @@ namespace Crails
     void write();
     void close();
 
-    HttpParser&        get_parser() { return *parser; }
-    const HttpRequest& get_request() const { return request; }
-    HttpResponse&      get_response() { return response; }
+    HttpParser&               get_parser() { return *parser; }
+    const HttpRequest&        get_request() const { return request; }
+    HttpResponse&             get_response() { return response; }
     boost::beast::tcp_stream& get_stream() { return stream; }
-    const std::string& get_connection_id() const { return connection_id; }
+    const std::string&        get_connection_id() const { return connection_id; }
+    unsigned int              get_max_body_size() { return max_body_size; }
+    void                      set_max_body_size(unsigned int value) { max_body_size = value; }
 
     void expires_after(std::chrono::duration<int>);
 
@@ -52,6 +54,7 @@ namespace Crails
     void read_header(boost::beast::error_code ec, std::size_t bytes_transferred);
     void on_write(bool keep_alive, boost::beast::error_code ec, std::size_t);
     void on_read_error(boost::beast::error_code);
+    void on_body_too_large();
     void reset_body_chunk_callback() { body_chunk_callback = std::function<void(std::string_view)>(); }
 
     const Server&             server;

@@ -44,7 +44,7 @@ void BodyParser::wait_for_body(Context& context, function<void()> finished_callb
 
   if (pending_body->total_read >= pending_body->to_read)
     callback();
-  else if (pending_body->to_read > pending_body->read_buffer.max_size())
+  else if (pending_body->to_read > context.connection->get_max_body_size())
   {
     body_too_large(context);
     finished_callback();
