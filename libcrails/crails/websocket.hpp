@@ -4,6 +4,8 @@
 # include "http.hpp"
 # include <boost/beast/core.hpp>
 # include <boost/beast/websocket.hpp>
+# include <boost/asio/strand.hpp>
+# include <boost/asio/any_io_executor.hpp>
 # include <list>
 # include <mutex>
 
@@ -26,7 +28,6 @@ namespace Crails
     typedef std::pair<std::string, MessageType> Message;
 
     void accept(const HttpRequest&);
-    void run();
     void read();
     void send(const std::string& message, MessageType type = TextMessage);
     void send(const char* message, std::size_t length, MessageType type = TextMessage);
@@ -40,6 +41,7 @@ namespace Crails
     void on_write(boost::beast::error_code ec, std::size_t);
     void write_next_message();
 
+    boost::asio::strand<boost::asio::any_io_executor> strand;
     boost::beast::websocket::stream<boost::beast::tcp_stream> stream;
     boost::asio::dynamic_string_buffer<char, std::char_traits<char>, std::allocator<char>> dynamic_buffer;
     std::string        receive_buffer;
@@ -47,7 +49,6 @@ namespace Crails
     bool               reading = false;
     bool               writing = false;
     bool               closed = false;
-    std::mutex         write_mutex;
   };
 }
 
