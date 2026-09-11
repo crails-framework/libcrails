@@ -36,28 +36,28 @@ namespace Crails
   struct UrlBuilder
   {
     template<typename T, typename... ARGS>
-    static void fragments(std::stringstream& stream, T fragment, ARGS... right)
+    static void fragments(std::ostringstream& stream, T fragment, ARGS... right)
     {
       stream << UrlFragmentEncode<T>::run(fragment) << '/';
-      fragments(stream, right...);
+      fragments(stream, std::forward<ARGS>(right)...);
     }
 
     template<typename T>
-    static void fragments(std::stringstream& stream, T fragment)
+    static void fragments(std::ostringstream& stream, T fragment)
     {
       stream << UrlFragmentEncode<T>::run(fragment);
     }
 
-    static void fragments(std::stringstream&) {}
+    static void fragments(std::ostringstream&) {}
   };
 
   template<typename... ARGS>
   std::string uri(ARGS... args)
   {
-    std::stringstream stream;
+    std::ostringstream stream;
 
     stream << '/';
-    UrlBuilder::fragments(stream, args...);
+    UrlBuilder::fragments(stream, std::forward<ARGS>(args)...);
     return stream.str();
   }
 }

@@ -2,6 +2,7 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 #include <regex>
+#include <limits>
 
 using namespace std;
 using namespace Crails;
@@ -13,20 +14,27 @@ Url Url::from_string(const std::string& url)
 
   if (std::regex_match(url, matches, url_matcher))
   {
-    bool ssl = matches[1].str() == "https";
-    return Url{
-      /* ssl    */ ssl,
-      /* host   */ matches[2].str(),
-      /* port   */ matches[4].str().length() > 0 ? boost::lexical_cast<unsigned short>(matches[4].str()) : static_cast<unsigned short>(ssl ? 443 : 80),
-      /* target */ matches[5].str()
-    };
+    bool         ssl  = matches[1].str() == "https";
+    unsigned int port = matches[4].str().length() > 0
+      ? boost::lexical_cast<unsigned int>(matches[4].str())
+      : static_cast<unsigned int>(ssl ? 443 : 80);
+
+    if (port <= std::numeric_limits<unsigned short>::max())
+    {
+      return Url{
+        /* ssl    */ ssl,
+        /* host   */ matches[2].str(),
+        /* port   */ static_cast<unsigned short>(port),
+        /* target */ matches[5].str()
+      };
+    }
   }
   return Url{};
 }
 
 std::string Url::to_string() const
 {
-  std::stringstream stream;
+  std::ostringstream stream;
 
   stream << "http";
   if (ssl) stream << 's';
