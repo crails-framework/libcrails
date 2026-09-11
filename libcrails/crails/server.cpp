@@ -41,7 +41,6 @@ static string initialize_public_path()
 Server::Server()
 {
   public_paths.push_back(initialize_public_path());
-  initialize_exception_catcher();
 }
 
 Server::~Server()
@@ -82,6 +81,7 @@ void Server::launch(int argc, const char **argv)
     initialize_pid_file(options.get_pidfile_path());
     listener->run();
     initialize_segvcatch(&CrailsServer::throw_crash_segv);
+    initialize_exception_catcher();
     logger << Logger::Info
       << "Listening to " << options.get_endpoint().address() << ':' << options.get_endpoint().port() << Logger::endl
       << ">> Pool Thread Size: " << options.get_thread_count() << Logger::endl;
@@ -147,6 +147,7 @@ void Server::initialize_pid_file(const string& filepath) const
 void Server::initialize_exception_catcher()
 {
   exception_catcher.add_exception_catcher<std::exception&>("std::exception");
+  exception_catcher.seal();
 }
 
 void Server::add_request_handler(RequestHandler* request_handler)

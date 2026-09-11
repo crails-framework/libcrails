@@ -15,60 +15,48 @@ namespace Crails
   void render_error_view(Context& context, HttpStatus code);
 }
 
-ExceptionCatcher::ExceptionCatcher()
-{}
-
-ExceptionCatcher::MutexLock::MutexLock(const Crails::Context& context)
-  : lock_guard<mutex>(context.mutex)
+void ExceptionCatcher::check_not_sealed() const
 {
+  if (sealed)
+    throw boost_ext::runtime_error("ExceptionCatcher::add_exception_catcher called after Server::launch()");
 }
 
-ExceptionCatcher::Context::Context(Crails::Context& context, function<void()> callback) :
-  iterator(0),
-  context(&context),
-  thread_id(std::this_thread::get_id()),
-  callback(callback)
+void ExceptionCatcher::run(Crails::Context& context, function<void()> callback) const
 {
-}
-
-ExceptionCatcher::Context::Context() : context(nullptr), thread_id(std::thread::id())
-{
-}
-
-void ExceptionCatcher::run_protected(Crails::Context& context, std::function<void()> callback) const
-{
-  Context exception_context(context, callback);
+  lock_guard<recursive_mutex> lock(context.mutex);
 
   try
   {
-    if (exception_context.iterator < functions.size())
-      functions[exception_context.iterator](exception_context);
-    else
-    {
-      const MutexLock lock(context);
-
-      context.exception_context = exception_context;
-      callback();
-    }
+    callback();
   }
   catch (...)
   {
-    response_exception(context, "Unknown exception", "Unfortunately, no data about it was harvested");
+    try
+    {
+      dispatch_exception(context, std::current_exception());
+    }
+    catch (...)
+    {
+      try
+      {
+        response_exception(context, "Unknown exception", "An exception handler threw while processing this exception");
+      }
+      catch (...)
+      {
+        logger << Logger::Error << "!! ExceptionCatcher: fallback error response itself failed" << Logger::endl;
+      }
+    }
   }
 }
 
-void ExceptionCatcher::run(Crails::Context& context, std::function<void()> callback) const
+void ExceptionCatcher::dispatch_exception(Crails::Context& context, std::exception_ptr eptr) const
 {
-  if (context.exception_context.thread_id != std::this_thread::get_id())
+  for (const Handler& handler : handlers)
   {
-    shared_ptr<Crails::Context> shared_context = context.shared_from_this();
-
-    run_protected(context, callback);
-    if (context.exception_context.thread_id == std::this_thread::get_id())
-      context.exception_context.thread_id = std::thread::id();
+    if (handler(context, eptr))
+      return ;
   }
-  else
-    callback();
+  response_exception(context, "Unknown exception", "No handler was registered for this exception type");
 }
 
 void ExceptionCatcher::response_exception(Crails::Context& context, string e_name, string e_what) const
@@ -88,7 +76,7 @@ void ExceptionCatcher::response_exception(Crails::Context& context, string e_nam
   }
 }
 
-void ExceptionCatcher::default_exception_handler(Crails::Context& context, const string& exception_name, const string& message, const string& trace)
+void ExceptionCatcher::default_exception_handler(Crails::Context& context, const string& exception_name, const string& message, const string& trace) const
 {
   if (trace.length() > 0)
     context.params["backtrace"] = trace;

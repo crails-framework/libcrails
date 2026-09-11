@@ -23,7 +23,6 @@ namespace Crails
     friend class Tests::Request;
     bool                               handled = false;
     std::atomic_flag                   finished = ATOMIC_FLAG_INIT;
-    ExceptionCatcher::Context          exception_context;
     const Server&                      server;
     std::promise<unsigned short>       end_promise;
     std::shared_future<unsigned short> end_future;
@@ -31,12 +30,12 @@ namespace Crails
     Context(const Server& server, Connection& connection);
     ~Context();
 
-    std::shared_ptr<Connection> connection;
-    BuildingResponse            response;
-    Params                      params;
-    SharedVars                  vars;
-    Utils::Timer                timer;
-    mutable std::mutex          mutex;
+    std::shared_ptr<Connection>  connection;
+    BuildingResponse             response;
+    Params                       params;
+    SharedVars                   vars;
+    Utils::Timer                 timer;
+    mutable std::recursive_mutex mutex;
 
     void protect(std::function<void()>);
     std::shared_future<unsigned short> get_future() { return end_future; }
