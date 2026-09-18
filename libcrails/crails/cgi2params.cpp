@@ -94,7 +94,7 @@ static inline void parse_value_and_assign(Data params, string_view str, size_t& 
 
 namespace Crails
 {
-  void cgi2params(const Data& params, const string_view str)
+  void cgi2params(Data params, const string_view str)
   {
     size_t pos = 0;
 

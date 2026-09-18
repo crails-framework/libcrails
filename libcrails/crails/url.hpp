@@ -9,7 +9,8 @@ class Data;
 
 namespace Crails
 {
-  void cgi2params(const Data& params, const std::string_view encoded_str);
+  void        cgi2params(Data output, const std::string_view encoded_str);
+  std::string params2cgi(Data input);
 
   struct Url
   {

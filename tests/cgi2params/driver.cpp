@@ -9,6 +9,7 @@ int main()
   using namespace Crails;
   using namespace std;
 
+  // BEGIN cgi2params
   // Single value
   {
     DataTree result;
@@ -53,6 +54,44 @@ int main()
     assert(values.size() == 2);
     assert(values[0] == "coucou");
     assert(values[1] == "goodbye");
+  }
+
+  // BEGIN params2cgi
+  // Single value
+  {
+    DataTree input;
+    input["one"] = "value";
+    assert(params2cgi(input.as_data()) == "one=value");
+  }
+
+  // Multiple values
+  {
+    DataTree input;
+    input["one"] = "value";
+    input["two"] = "values";
+    assert(params2cgi(input.as_data()) == "one=value&two=values");
+  }
+
+  // Encodes characters
+  {
+    DataTree input;
+    input["first"] = "encoded value";
+    assert(params2cgi(input.as_data()) == "first=encoded%20value");
+  }
+
+  // Handle hashes
+  {
+    DataTree input;
+    input["first"]["1"] = "coucou";
+    input["first"]["2"] = "goodbye";
+    assert(params2cgi(input.as_data()) == "first%5B1%5D=coucou&first%5B2%5D=goodbye");
+  }
+
+  // Handle arrays
+  {
+    DataTree input;
+    input.from_json("[\"coucou\",\"goodbye\"]");
+    assert(params2cgi(input.as_data()) == "first%5B1%5D%5B%5D=coucou&first%5B1%5D%5B%5D=goodbye");
   }
 
   return 0;
