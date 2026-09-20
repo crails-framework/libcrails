@@ -25,8 +25,8 @@ namespace Crails
   void render_error_view(Context& context, HttpStatus code)
   {
     const FileRequestHandler* file_handler = dynamic_cast<const FileRequestHandler*>(Server::get_request_handler("file"));
-    stringstream file_name;
-    stringstream view_name;
+    ostringstream file_name;
+    ostringstream view_name;
 
     context.response.set_status_code(code);
     file_name << (unsigned int)(code);
@@ -46,21 +46,23 @@ namespace Crails
 
   void render_exception_view(Context& context, string& exception_name, string& exception_message)
   {
-    SharedVars vars;
+    SharedVars  vars;
+    const auto& request = context.connection->get_request();
+    auto        accept_it = request.find(HttpHeader::accept);
+    string_view accept_header;
 
+    if (accept_it != request.end())
+      accept_header = accept_it->value();
     vars["exception_name"] = exception_name;
     vars["exception_what"] = exception_message;
     vars["params"]         = &(context.params);
     {
       try {
         context.response.set_status_code(HttpStatus::internal_server_error);
-        Renderer::render("exception", context.params.as_data(), context.response, vars);
+        Renderer::render("exception", accept_header, context.response, vars);
       }
-      catch (const MissingTemplate& exception) {
-        logger << Logger::Warning
-          << "# Exception template not found for format "
-          << context.params["headers"]["Accept"].defaults_to<string>("")
-          << Logger::endl;
+      catch (const MissingTemplate&) {
+        logger << Logger::Warning << "# Exception template not found for format " << accept_header << Logger::endl;
       }
       catch (const std::exception& e) {
         logger << Logger::Error << "# Template lib/exception crashed (" << e.what() << ')' << Logger::endl;
