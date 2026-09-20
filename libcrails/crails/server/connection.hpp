@@ -16,6 +16,7 @@ namespace Crails
   public:
     typedef std::function<void(Connection&)> RequestHandler;
     typedef boost::beast::http::request_parser<boost::beast::http::buffer_body> HttpParser;
+    typedef boost::asio::strand<boost::asio::io_context::executor_type> Strand;
 
     Connection(const Server&, boost::asio::ip::tcp::socket);
     Connection(const Server&, HttpRequest); // Only needed for test purposes
@@ -40,6 +41,8 @@ namespace Crails
     std::size_t get_content_length_remaining() const;
     void get_body(std::function<void (std::string_view)>);
 
+    Strand& get_strand() { return strand; }
+
     template<typename CONNECTION>
     std::shared_ptr<CONNECTION> move_to()
     {
@@ -58,7 +61,7 @@ namespace Crails
     void reset_body_chunk_callback() { body_chunk_callback = std::function<void(std::string_view)>(); }
 
     const Server&             server;
-    boost::asio::strand<boost::asio::io_context::executor_type> strand;
+    Strand                    strand;
     boost::beast::tcp_stream  stream;
     boost::beast::flat_buffer buffer{8192};
 
