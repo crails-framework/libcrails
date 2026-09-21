@@ -16,7 +16,7 @@ namespace Crails
   {
     static std::string encode(const std::string_view);
     static std::string decode(const std::string_view);
-    static Url         from_string(const std::string&);
+    static Url         from_string(const std::string_view);
     std::string        to_string() const;
 
     bool           ssl = false;

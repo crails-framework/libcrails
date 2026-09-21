@@ -7,12 +7,12 @@
 using namespace std;
 using namespace Crails;
 
-Url Url::from_string(const std::string& url)
+Url Url::from_string(const std::string_view url)
 {
   static const std::regex url_matcher("^(https?)://([^/:]+)(:([0-9]{1,5}))?/?(.*)$");
-  std::smatch matches;
+  match_results<string_view::const_iterator> matches;
 
-  if (std::regex_match(url, matches, url_matcher))
+  if (regex_match(url.begin(), url.end(), matches, url_matcher))
   {
     bool         ssl  = matches[1].str() == "https";
     unsigned int port = matches[4].str().length() > 0
@@ -34,7 +34,7 @@ Url Url::from_string(const std::string& url)
 
 std::string Url::to_string() const
 {
-  std::ostringstream stream;
+  ostringstream stream;
 
   stream << "http";
   if (ssl) stream << 's';
