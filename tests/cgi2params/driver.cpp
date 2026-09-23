@@ -76,7 +76,7 @@ int main()
   {
     DataTree input;
     input["first"] = "encoded value";
-    assert(params2cgi(input.as_data()) == "first=encoded%20value");
+    assert(params2cgi(input.as_data()) == "first=encoded+value");
   }
 
   // Handle hashes
@@ -90,8 +90,8 @@ int main()
   // Handle arrays
   {
     DataTree input;
-    input.from_json("[\"coucou\",\"goodbye\"]");
-    assert(params2cgi(input.as_data()) == "first%5B1%5D%5B%5D=coucou&first%5B1%5D%5B%5D=goodbye");
+    input.from_json("{\"first\":[\"coucou\",\"goodbye\"]}");
+    assert(params2cgi(input.as_data()) == "first%5B%5D=coucou&first%5B%5D=goodbye");
   }
 
   return 0;

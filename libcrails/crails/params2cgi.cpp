@@ -33,19 +33,24 @@ namespace Crails
 {
   void params2cgi(std::ostream& stream, Data params, bool first = true)
   {
-    if (params.is_array())
+    if (params.is_array() && params.count() > 0)
     {
-      for (Data entry : params)
+      for (auto it : params.get_ptree())
       {
         if (!first) stream << '&';
-        stream << Url::encode(get_form_path(params)) << "%5B%5D=" << Url::encode(entry.as<string>());
+        stream << Url::encode(get_form_path(params))
+               << "%5B%5D="
+               << Url::encode(it.second.get_value<string>());
         first = false;
       }
     }
     else if (params.get_keys().size() > 0)
     {
       for (Data entry : params)
+      {
         params2cgi(stream, entry, first);
+        first = false;
+      }
     }
     else
     {
