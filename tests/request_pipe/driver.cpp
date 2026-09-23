@@ -1,5 +1,5 @@
 #include <crails/program_options.hpp>
-#include <iostream>
+#include <crails/logger.hpp>
 #include "test_server.hpp"
 #include <crails/session_store/no_session_store.hpp>
 
@@ -119,5 +119,6 @@ int main()
     assert(future_status.get() == 404);
   }
 
+  Crails::Server::cleanup();
   return 0;
 }

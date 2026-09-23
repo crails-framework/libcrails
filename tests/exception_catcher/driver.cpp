@@ -319,5 +319,6 @@ int main()
     assert(app_specific_handler_called);
   }
 
+  Crails::Server::cleanup();
   return 0;
 }

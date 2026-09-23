@@ -45,6 +45,7 @@ namespace Crails
     static const std::string&       get_temporary_path() { return temporary_path; }
     static boost::asio::io_context& get_io_context();
     static void set_environment(Environment);
+    static void cleanup();
 
     bool allow_keep_alive() const { return keep_alive_enabled; }
     unsigned int get_max_body_size() const { return max_body_size; }

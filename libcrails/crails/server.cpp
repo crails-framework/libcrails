@@ -24,6 +24,14 @@ Server::RequestHandlers Server::request_handlers;
 Server::Directories     Server::public_paths;
 std::string             Server::temporary_path;
 
+static unique_ptr<boost::asio::io_context> server_io_context;
+
+static boost::asio::io_context& prepare_io_context()
+{
+  server_io_context.reset(new boost::asio::io_context);
+  return *server_io_context;
+}
+
 static string initialize_public_path()
 {
   const char* environment_variable = std::getenv("PUBLIC_PATH");
@@ -55,9 +63,15 @@ Server::~Server()
 
 boost::asio::io_context& Server::get_io_context()
 {
-  static boost::asio::io_context io_context;
+  static boost::asio::io_context& io_context = prepare_io_context();
 
   return io_context;
+}
+
+void Server::cleanup()
+{
+  server_io_context = nullptr;
+  logger.cleanup();
 }
 
 void Server::launch(int argc, const char **argv)
