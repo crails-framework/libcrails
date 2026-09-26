@@ -13,7 +13,7 @@ template<typename Socket> static std::string socket_description(Socket& socket) 
 Connection::Connection(const Server& server_, HttpRequest request) :
   server(server_),
   strand(boost::asio::make_strand(server_.get_io_context())),
-  stream(std::move(asio::ip::tcp::socket(server.get_io_context()))),
+  stream(strand),
   request(request),
   max_body_size(server.get_max_body_size())
 {}
@@ -21,14 +21,19 @@ Connection::Connection(const Server& server_, HttpRequest request) :
 Connection::Connection(const Server& server_, asio::ip::tcp::socket socket_) :
   server(server_),
   strand(boost::asio::make_strand(server_.get_io_context())),
-  stream(std::move(socket_)),
+  stream(strand),
   max_body_size(server.get_max_body_size())
 {
   static thread_local unsigned int i = 0;
   std::stringstream id_stream;
+  beast::error_code ec;
+  const auto        protocol = socket_.local_endpoint(ec).protocol();
 
-  id_stream << socket_description(stream.socket()) << '/' << std::this_thread::get_id() << '/' << ++i;
+  id_stream << socket_description(socket_) << '/' << std::this_thread::get_id() << '/' << ++i;
   connection_id = id_stream.str();
+
+  stream.socket().assign(protocol, socket_.release(ec));
+
   logger << Logger::Debug << "Crails::Connection opened: " << connection_id << Logger::endl;
   beast::get_lowest_layer(stream).expires_after(std::chrono::seconds(3));
 }
