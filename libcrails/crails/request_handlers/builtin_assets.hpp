@@ -19,6 +19,7 @@ namespace Crails
   {
     std::string_view path;
     std::string_view compression_strategy;
+    std::string_view cache_strategy;
   public:
     BuiltinAssets(std::string_view path, std::string_view compression_strategy) : path(path), compression_strategy(compression_strategy)
     {
@@ -27,9 +28,11 @@ namespace Crails
     bool accepts(const HttpRequest& request) const;
 
     void add(const std::string_view name, const char* data, size_t length);
+    void set_cache_strategy(const std::string_view value) { cache_strategy = value; }
 
     std::string_view get_root_path() const { return path; }
     std::string_view get_content_encoding() const { return compression_strategy; }
+    std::string_view get_cache_control() const { return cache_strategy; }
   };
 
   class BuiltinAssetsHandler : public Crails::RequestHandler
