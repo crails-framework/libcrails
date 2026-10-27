@@ -31,7 +31,7 @@ namespace Crails
     bool is_cache_enabled(void) const   { return cache_enabled;   }
 
   protected:
-    virtual void set_headers_for_file(BuildingResponse& response, const std::string& fullpath) const {}
+    virtual void set_headers_for_file(BuildingResponse& response, const std::string_view fullpath) const {}
 
   private:
     bool           cache_enabled;

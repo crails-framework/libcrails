@@ -213,7 +213,7 @@ bool FileRequestHandler::send_file(const std::string& fullpath, BuildingResponse
     response.set_header(HttpHeader::accept_ranges, "bytes");
     if (code == HttpStatus::partial_content)
       response.set_header(HttpHeader::content_range, get_content_range(range, str.length()));
-    set_headers_for_file(response, fullpath);
+    set_headers_for_file(response, string_view(fullpath));
     response.set_status_code(code);
     if (range.second == 0)
       range.second = str.size();

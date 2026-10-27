@@ -42,7 +42,7 @@ void BuiltinAssetsHandler::operator()(Context& context, function<void(bool)> cal
   if (request.method() == HttpVerb::get && library.accepts(request))
   {
     const string_view path(library.get_root_path());
-    const string uri(request.target());
+    const string_view uri(request.target());
 
     if (uri.substr(0, path.length()) == path)
       handled = process(uri.substr(path.length()), context.response);
@@ -50,7 +50,7 @@ void BuiltinAssetsHandler::operator()(Context& context, function<void(bool)> cal
   callback(handled);
 }
 
-bool BuiltinAssetsHandler::process(const string& path, BuildingResponse& response) const
+bool BuiltinAssetsHandler::process(const string_view path, BuildingResponse& response) const
 {
   auto it = library.find(path);
 
@@ -61,6 +61,7 @@ bool BuiltinAssetsHandler::process(const string& path, BuildingResponse& respons
       response.set_header(HttpHeader::content_encoding, library.get_content_encoding());
     if (library.get_cache_control().length() > 0)
       response.set_header(HttpHeader::cache_control, library.get_cache_control());
+    set_headers_for_file(response, path);
     response.set_status_code(HttpStatus::ok);
     response.set_body(it->second.data, it->second.length);
     response.send();

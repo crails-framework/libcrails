@@ -42,8 +42,11 @@ namespace Crails
 
     void operator()(Context& context, std::function<void(bool)> callback) const override;
 
+  protected:
+    virtual void set_headers_for_file(BuildingResponse& response, const std::string_view path) const {}
+
   private:
-    bool process(const std::string& path, BuildingResponse& response) const;
+    bool process(const std::string_view path, BuildingResponse& response) const;
 
     const std::string_view path;
     const BuiltinAssets&   library;
