@@ -157,16 +157,19 @@ void Connection::on_read_error(boost::beast::error_code ec)
 
 void Connection::write()
 {
-  if (get_content_length_remaining() > 0)
+  if (!muted) [[likely]]
   {
-    beast::get_lowest_layer(stream).cancel();
-    response.keep_alive(false);
+    if (get_content_length_remaining() > 0)
+    {
+      beast::get_lowest_layer(stream).cancel();
+      response.keep_alive(false);
+    }
+    logger << Logger::Debug << "Crails::Connection writing on: " << connection_id << Logger::endl;
+    beast::http::async_write(
+      stream, response,
+      beast::bind_front_handler(&Connection::on_write, shared_from_this(), response.keep_alive())
+    );
   }
-  logger << Logger::Debug << "Crails::Connection writing on: " << connection_id << Logger::endl;
-  beast::http::async_write(
-    stream, response,
-    beast::bind_front_handler(&Connection::on_write, shared_from_this(), response.keep_alive())
-  );
 }
 
 void Connection::on_write(bool keep_alive, beast::error_code ec, std::size_t)

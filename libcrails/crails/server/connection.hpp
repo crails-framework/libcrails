@@ -33,6 +33,7 @@ namespace Crails
     const std::string&        get_connection_id() const { return connection_id; }
     unsigned int              get_max_body_size() { return max_body_size; }
     void                      set_max_body_size(unsigned int value) { max_body_size = value; }
+    void                      set_muted(bool val) { muted = val; }
 
     void expires_after(std::chrono::duration<int>);
 
@@ -74,6 +75,7 @@ namespace Crails
 
     std::function<void(std::string_view)> body_chunk_callback;
     std::string body;
+    bool muted = false;
   };
 }
 
