@@ -3,7 +3,7 @@
 #include "test_server.hpp"
 #include <crails/session_store/no_session_store.hpp>
 
-#undef NODEBUG
+#undef NDEBUG
 #include <cassert>
 
 

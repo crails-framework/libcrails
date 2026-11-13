@@ -1,7 +1,7 @@
 #include <crails/program_options.hpp>
 #include <thread>
 
-#undef NODEBUG
+#undef NDEBUG
 #include <cassert>
 
 int main()

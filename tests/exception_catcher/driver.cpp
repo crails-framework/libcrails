@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include "test_server.hpp"
 
-#undef NODEBUG
+#undef NDEBUG
 #include <cassert>
 
 using namespace Crails;

@@ -1,6 +1,6 @@
 #include <crails/url.hpp>
 
-#undef NODEBUG
+#undef NDEBUG
 #include <cassert>
 
 int main()

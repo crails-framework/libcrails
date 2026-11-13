@@ -1,7 +1,7 @@
 #include <crails/url.hpp>
 #include <crails/datatree.hpp>
 
-#undef NODEBUG
+#undef NDEBUG
 #include <cassert>
 
 int main()

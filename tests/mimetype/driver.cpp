@@ -1,6 +1,6 @@
 #include <crails/mimetype.hpp>
 
-#undef NODEBUG
+#undef NDEBUG
 #include <cassert>
 
 int main()
