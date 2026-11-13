@@ -67,7 +67,7 @@ namespace Crails
     void seal() { sealed = true; }
 
     std::vector<Handler> handlers;
-    bool                  sealed = false;
+    bool                 sealed = false;
   };
 }
 
