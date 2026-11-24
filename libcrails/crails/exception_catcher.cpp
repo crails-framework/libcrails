@@ -11,7 +11,7 @@ using namespace Crails;
 
 namespace Crails
 {
-  void render_exception_view(Context& context, string& exception_name, string& exception_message);
+  void render_exception_view(Context& context, const string& exception_name, const string& exception_message);
   void render_error_view(Context& context, HttpStatus code);
 }
 
@@ -39,7 +39,7 @@ void ExceptionCatcher::run(Crails::Context& context, function<void()> callback) 
     {
       try
       {
-        response_exception(context, "Unknown exception", "An exception handler threw while processing this exception");
+        response_exception(context, HttpStatus::internal_server_error, "Unknown exception", "An exception handler threw while processing this exception");
       }
       catch (...)
       {
@@ -56,12 +56,12 @@ void ExceptionCatcher::dispatch_exception(Crails::Context& context, std::excepti
     if (handler(context, eptr))
       return ;
   }
-  response_exception(context, "Unknown exception", "No handler was registered for this exception type");
+  response_exception(context, HttpStatus::internal_server_error, "Unknown exception", "No handler was registered for this exception type");
 }
 
-void ExceptionCatcher::response_exception(Crails::Context& context, string e_name, string e_what) const
+void ExceptionCatcher::response_exception(Context& context, HttpStatus status, const string& e_name, const string& e_what) const
 {
-  context.response.set_status_code(HttpStatus::internal_server_error);
+  context.response.set_status_code(status);
   logger << Logger::Error << "# Catched exception " << e_name << ": " << e_what;
   if (context.params["backtrace"].exists())
     logger << "\n" << context.params["backtrace"].as<string>();
@@ -69,16 +69,16 @@ void ExceptionCatcher::response_exception(Crails::Context& context, string e_nam
   if (!context.is_finished()) [[likely]]
   {
     if (Crails::environment == Crails::Production)
-      render_error_view(context, HttpStatus::internal_server_error);
+      render_error_view(context, status);
     else if (Renderers::singleton::get() != nullptr)
       render_exception_view(context, e_name, e_what);
     context.on_finished();
   }
 }
 
-void ExceptionCatcher::default_exception_handler(Crails::Context& context, const string& exception_name, const string& message, const string& trace) const
+void ExceptionCatcher::default_exception_handler(Context& context, HttpStatus status, const string& exception_name, const string& message, const string& trace) const
 {
   if (trace.length() > 0)
     context.params["backtrace"] = trace;
-  response_exception(context, exception_name, message);
+  response_exception(context, status, exception_name, message);
 }

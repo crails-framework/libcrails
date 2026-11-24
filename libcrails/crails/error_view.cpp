@@ -44,7 +44,7 @@ namespace Crails
     }
   }
 
-  void render_exception_view(Context& context, string& exception_name, string& exception_message)
+  void render_exception_view(Context& context, const string& exception_name, const string& exception_message)
   {
     SharedVars  vars;
     const auto& request = context.connection->get_request();
@@ -53,8 +53,8 @@ namespace Crails
 
     if (accept_it != request.end())
       accept_header = accept_it->value();
-    vars["exception_name"] = exception_name;
-    vars["exception_what"] = exception_message;
+    vars["exception_name"] = string_view(exception_name);
+    vars["exception_what"] = string_view(exception_message);
     vars["params"]         = &(context.params);
     {
       try {

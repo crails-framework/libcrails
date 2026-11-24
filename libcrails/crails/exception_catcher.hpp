@@ -2,6 +2,7 @@
 # define EXCEPTION_CATCHER_HPP
 
 # include <crails/utils/backtrace.hpp>
+# include "http.hpp"
 # include <functional>
 # include <sstream>
 # include <string>
@@ -56,13 +57,18 @@ namespace Crails
       });
     }
 
-    void default_exception_handler(Crails::Context&, const std::string& exception_name, const std::string& message, const std::string& trace) const;
+    void default_exception_handler(Crails::Context& context, const std::string& exception_name, const std::string& message, const std::string& trace) const
+    {
+      default_exception_handler(context, HttpStatus::internal_server_error, exception_name, message, trace);
+    }
+
+    void default_exception_handler(Crails::Context&, HttpStatus, const std::string& exception_name, const std::string& message, const std::string& trace) const;
 
   private:
     typedef std::function<bool (Crails::Context&, std::exception_ptr)> Handler;
 
     void dispatch_exception(Crails::Context&, std::exception_ptr) const;
-    void response_exception(Crails::Context&, std::string exception_name, std::string message) const;
+    void response_exception(Crails::Context&, Crails::HttpStatus, const std::string& exception_name, const std::string& message) const;
     void check_not_sealed() const;
     void seal() { sealed = true; }
 
