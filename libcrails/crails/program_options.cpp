@@ -18,6 +18,7 @@ ProgramOptions::ProgramOptions(int argc, const char** argv, int options)
     ("pidfile",    program_options::value<std::string>(),    "pid file")
     ("log,l",      program_options::value<std::string>(),    "log output")
     ("errors,e",   program_options::value<std::string>(),    "error log output")
+    ("watchdog",   "abort the process if the server stops responding")
     ("help", "")
     ;
   if ((options & AllowUnregistered) > 0)

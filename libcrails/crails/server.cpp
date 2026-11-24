@@ -7,6 +7,7 @@
 #include "log_files.hpp"
 #include "request_parser.hpp"
 #include "request_handler.hpp"
+#include "watchdog.hpp"
 #include <cstdlib>
 #ifdef USE_SEGVCATCH
 # include <segvcatch.h>
@@ -25,6 +26,7 @@ Server::Directories     Server::public_paths;
 std::string             Server::temporary_path;
 
 static unique_ptr<boost::asio::io_context> server_io_context;
+static unique_ptr<Watchdog>                server_watchdog = nullptr;
 
 static boost::asio::io_context& prepare_io_context()
 {
@@ -105,11 +107,17 @@ void Server::launch(int argc, const char **argv)
 #endif
     for (size_t i = 0 ; i < options.get_thread_count() - 1 ; ++i)
       thread_pool.emplace_back([&io_context]() { io_context.run(); });
+    if (options.get_watchdog_enabled())
+    {
+      server_watchdog = make_unique<Watchdog>(io_context, Watchdog::default_timeout());
+      server_watchdog->start();
+    }
     running = true;
     io_context.run();
     listener->stop();
     for (thread& t : thread_pool)
       t.join();
+    server_watchdog.reset();
     if (marked_for_restart)
       do_restart(argc, argv);
   }
@@ -132,6 +140,8 @@ void Server::stop()
 
   logger << Logger::Info << ">> Crails server will " << action << '.' << Logger::endl;
   logger << ">> Waiting for requests to end..." << Logger::endl;
+  if (server_watchdog)
+    server_watchdog->beat();
   get_io_context().stop();
   logger << ">> Done." << Logger::endl;
 }

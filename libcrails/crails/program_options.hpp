@@ -24,6 +24,7 @@ namespace Crails
     std::string                    get_pidfile_path() const;
     std::string                    get_log_file() const { return get_value<std::string>("log", ""); }
     std::string                    get_error_log_file() const { return get_value<std::string>("errors", ""); }
+    bool                           get_watchdog_enabled() const { return vm.count("watchdog") > 0; }
 
   private:
     template<typename T>
